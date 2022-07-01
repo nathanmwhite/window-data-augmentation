@@ -7,3 +7,4 @@ TODO:
 2. Convert code to handle SOTA libraries.
 3. Restructure code to handle multiple inputs.
 4. Develop data for (plausibly) Chumash and Pomo data, consent permitting.
+5. Revisit handling issues in sents_util.py.
