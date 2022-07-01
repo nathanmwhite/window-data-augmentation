@@ -1,6 +1,4 @@
-# window-data-augmentation
-
-A Window-based Approach to Data Augmentation for Text Normalization
+# A Window-based Approach to Data Augmentation for Text Normalization
 
 This repository will contain the code for the paper "A Window-based Approach to Data Augmentation for Text Normalization."
 
