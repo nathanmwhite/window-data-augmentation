@@ -20,6 +20,8 @@ import pandas as pd
 
 from sents_util import retrieve_sents
 
+TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
+
 
 def prepare_windowed_data(datapath):
     # sliding data could be of many different sizes
@@ -74,17 +76,56 @@ def prepare_windowed_data(datapath):
             'test': test_data}
 
 
-def get_vocabulary(path='ywl_vocab.csv'):
+def get_vocabulary(base_data, path='ywl_vocab.csv', use_char=True):
     vocab_df = pd.read_csv(path, delimiter='\t')
     vocab = vocab_df['word'].dropna().to_numpy().tolist()
-    return vocab
+    
+    # TODO: review for current accuracy and relevance
+    charset = set([c for line in base_data[0]+base_data[1] for c in line])
+    vocab_letters = list(set([c for line in vocab for c in line]))
+    #vocab_letters = vocab
+    letterset = list(set([c for line in train_output+test_output for c in line])) + vocab_letters
+
+    complete_set = charset.union(letterset)
+
+    complete_set = ['<pad>'] + list(complete_set) + ['<start>', '<end>']
+
+    total_vocab = {k: i for (i, k) in enumerate(complete_set)}
+
+    inv_total_vocab = {i: k for (k, i) in total_vocab.items()}
+    
+    vocab_sequences = [[total_vocab[i] for i in word] for word in vocab]
+    
+    return total_vocab, inv_total_vocab, vocab_sequences
+
+
+# TODO: review and revise
+# add a start and end token to the input and target
+def encode(lang1, lang2):
+  start_token = total_vocab['<start>']
+  end_token = total_vocab['<end>']
+  lang1 = [start_token] + [total_vocab[w] for w in lang1] \
+           + [end_token]
+
+  lang2 = [start_token] + [total_vocab[w] for w in lang2] \
+           + [end_token]
+  
+  return lang1, lang2
+
+
+# TODO: review to ensure two different types of combination have not been conflated
+def encode_sequences(data):
+    sequences = {}
+    for type in TYPES:
+        sequences[type] = zip(*[encode(a, b) for a, b in zip(data[type][0], data[type][1])])
+    
+    return sequences
 
 
 # TODO: finish implementation
 def generate_windowed_input_output(data, use_char=True):
     data_out = {}
-    types = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
-    for type in types:
+    for type in TYPES:
         input_, output_ = join_sents(data[type])
         if use_char == True:
             input_tokens = [[c for c in line] for line in input_]
@@ -94,9 +135,64 @@ def generate_windowed_input_output(data, use_char=True):
         tokens = (input_tokens, output_tokens)
         data_out[type] = tokens
         
-    vocab = get_vocabulary()
+    vocab, inverse_vocab, vocab_sequences = get_vocabulary()
     
+    sequences = encode_sequences(data_out)
     
+    return sequences
+
+# TODO: organize
+def get_seq_lengths(data):
+    INPUT_LEN = max([len(line) for line in train_in_encoded] + \
+                #[len(line) for line in left_window_in_encoded] + \
+                #[len(line) for line in right_window_in_encoded] + \
+                [len(line) for line in test_in_encoded])
+    
+from tensorflow.keras.preprocessing.sequence import pad_sequences    
+    
+train_in_padded = pad_sequences(train_in_encoded, 
+                             maxlen=INPUT_LEN,
+                             padding='post', 
+                             value=total_vocab['<pad>'])
+test_in_padded = pad_sequences(test_in_encoded, 
+                             maxlen=INPUT_LEN,
+                             padding='post', 
+                             value=total_vocab['<pad>'])
+train_out_padded = pad_sequences(train_out_encoded,
+                             maxlen=OUTPUT_LEN,
+                             padding='post',
+                             value=total_vocab['<pad>'])
+test_out_padded = pad_sequences(test_out_encoded,
+                             maxlen=OUTPUT_LEN,
+                             padding='post',
+                             value=total_vocab['<pad>'])
 
 
+def create_tf_dataset(encoder_data, decoder_data):
+    enc_numpy = np.asarray(encoder_data, dtype=np.int64)
+    enc_dataset = tf.data.Dataset.from_tensor_slices(enc_numpy)
 
+    dec_numpy = np.asarray(decoder_data, dtype=np.int64)
+    dec_dataset = tf.data.Dataset.from_tensor_slices(dec_numpy)
+
+    dataset = tf.data.Dataset.zip((enc_dataset, dec_dataset))
+
+    dataset = dataset.cache()
+    dataset = dataset.padded_batch(BATCH_SIZE)
+    dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
+
+    return dataset
+
+train_dataset = create_tf_dataset(train_in_padded, train_out_padded)
+#test_dataset = create_tf_dataset(test_in_padded, test_out_padded)
+
+enc_test_numpy = np.asarray(test_in_padded, dtype=np.int64)
+enc_test_dataset = tf.data.Dataset.from_tensor_slices(enc_test_numpy)
+ 
+dec_test_numpy = np.asarray(test_out_padded, dtype=np.int64)
+dec_test_dataset = tf.data.Dataset.from_tensor_slices(dec_test_numpy)
+ 
+test_dataset = tf.data.Dataset.zip((enc_test_dataset, dec_test_dataset))
+
+# TODO: after this, model implementation needs to be done
+# LSTM and Transformer have been done previously in Jupyter Notebooks
