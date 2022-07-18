@@ -18,12 +18,14 @@ import os
 
 import pandas as pd
 
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
 from sents_util import retrieve_sents
 
 TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 
 
-def prepare_windowed_data(datapath):
+def get_windowed_data(datapath):
     # sliding data could be of many different sizes
     data = []
     left_window_data = []
@@ -36,6 +38,7 @@ def prepare_windowed_data(datapath):
     sliding_13_data = []
     test_data = []
 
+    # TODO: rewrite to allow cross-validation
     test_text_indices = [5, 10, 17, 18]
     training_text_indices = [i for i in range(1, 21) if i not in test_text_indices]
 
@@ -139,35 +142,30 @@ def generate_windowed_input_output(data, use_char=True):
     
     sequences = encode_sequences(data_out)
     
-    return sequences
+    in_len, out_len = get_seq_lengths(data_out)
+    
+    padded_sequences = {}
+    for type in TYPES:
+        padded_sequences[type][0] = pad_sequences(sequences[type][0],
+                                                  maxlen=in_len,
+                                                  padding='post',
+                                                  value=vocab['<pad>'])
+        padded_sequences[type][1] = pad_sequences(sequences[type][1],
+                                                  maxlen=out_len,
+                                                  padding='post',
+                                                  value=vocab['<pad>'])
+    
+    return padded_sequences
 
-# TODO: organize
+
 def get_seq_lengths(data):
-    INPUT_LEN = max([len(line) for line in train_in_encoded] + \
-                #[len(line) for line in left_window_in_encoded] + \
-                #[len(line) for line in right_window_in_encoded] + \
-                [len(line) for line in test_in_encoded])
-    
-from tensorflow.keras.preprocessing.sequence import pad_sequences    
-    
-train_in_padded = pad_sequences(train_in_encoded, 
-                             maxlen=INPUT_LEN,
-                             padding='post', 
-                             value=total_vocab['<pad>'])
-test_in_padded = pad_sequences(test_in_encoded, 
-                             maxlen=INPUT_LEN,
-                             padding='post', 
-                             value=total_vocab['<pad>'])
-train_out_padded = pad_sequences(train_out_encoded,
-                             maxlen=OUTPUT_LEN,
-                             padding='post',
-                             value=total_vocab['<pad>'])
-test_out_padded = pad_sequences(test_out_encoded,
-                             maxlen=OUTPUT_LEN,
-                             padding='post',
-                             value=total_vocab['<pad>'])
+    input_len = max([len(line) for line in data['base'][0]] + \
+                    [len(line) for line in data['test'][0]])
+    output_len = max([len(line) for line in data['base'][1]] + \
+                     [len(line) for line in data['test'][1]])
+    return input_len, output_len
 
-
+    
 def create_tf_dataset(encoder_data, decoder_data):
     enc_numpy = np.asarray(encoder_data, dtype=np.int64)
     enc_dataset = tf.data.Dataset.from_tensor_slices(enc_numpy)
@@ -183,16 +181,24 @@ def create_tf_dataset(encoder_data, decoder_data):
 
     return dataset
 
-train_dataset = create_tf_dataset(train_in_padded, train_out_padded)
-#test_dataset = create_tf_dataset(test_in_padded, test_out_padded)
 
-enc_test_numpy = np.asarray(test_in_padded, dtype=np.int64)
-enc_test_dataset = tf.data.Dataset.from_tensor_slices(enc_test_numpy)
+def create_train_test_dataset(train_in_padded,
+                              train_out_padded,
+                              test_in_padded,
+                              test_out_padded):
+    
+    train_dataset = create_tf_dataset(train_in_padded, train_out_padded)
+    #test_dataset = create_tf_dataset(test_in_padded, test_out_padded)
+
+    enc_test_numpy = np.asarray(test_in_padded, dtype=np.int64)
+    enc_test_dataset = tf.data.Dataset.from_tensor_slices(enc_test_numpy)
  
-dec_test_numpy = np.asarray(test_out_padded, dtype=np.int64)
-dec_test_dataset = tf.data.Dataset.from_tensor_slices(dec_test_numpy)
+    dec_test_numpy = np.asarray(test_out_padded, dtype=np.int64)
+    dec_test_dataset = tf.data.Dataset.from_tensor_slices(dec_test_numpy)
  
-test_dataset = tf.data.Dataset.zip((enc_test_dataset, dec_test_dataset))
+    test_dataset = tf.data.Dataset.zip((enc_test_dataset, dec_test_dataset))
+    
+    return test_dataset
 
 # TODO: after this, model implementation needs to be done
 # LSTM and Transformer have been done previously in Jupyter Notebooks
