@@ -8,11 +8,15 @@ __copyright__ = "Copyright © 2020-2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
+import io
+
 import logging
 
 logging.basicConfig(level=logging.DEBUG, filename='prepare_data.log')
 
 import os
+
+import pandas as pd
 
 from sents_util import retrieve_sents
 
@@ -69,27 +73,30 @@ def prepare_windowed_data(datapath):
             'S13': sliding_13_data,
             'test': test_data}
 
-# TODO: organize into a function
-train_input, train_output = join_sents(data)
-# left_window_input, left_window_output = join_sents(left_window_data)
-# right_window_input, right_window_output = join_sents(right_window_data)
-# sliding_3_input, sliding_3_output = join_sents(sliding_3_data)
-# sliding_5_input, sliding_5_output = join_sents(sliding_5_data)
-# sliding_7_input, sliding_7_output = join_sents(sliding_7_data)
-# sliding_9_input, sliding_9_output = join_sents(sliding_9_data)
-# sliding_11_input, sliding_11_output = join_sents(sliding_11_data)
-# sliding_13_input, sliding_13_output = join_sents(sliding_13_data)
-test_input, test_output = join_sents(test_data)
 
-train_in_tokens = [[c for c in line] for line in train_input]
-train_out_tokens = [[c for c in line] for line in train_output]
-test_in_tokens = [[c for c in line] for line in test_input]
-test_out_tokens = [[c for c in line] for line in test_output]
+def get_vocabulary(path='ywl_vocab.csv'):
+    vocab_df = pd.read_csv(path, delimiter='\t')
+    vocab = vocab_df['word'].dropna().to_numpy().tolist()
+    return vocab
 
-import io
-import pandas as pd
 
-vocab_df = pd.read_csv('/gdrive/MyDrive/ywl_transformer/second_randomized/vocab.csv', delimiter='\t')
-vocab = vocab_df['word'].dropna().to_numpy().tolist()
+# TODO: finish implementation
+def generate_windowed_input_output(data, use_char=True):
+    data_out = {}
+    types = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
+    for type in types:
+        input_, output_ = join_sents(data[type])
+        if use_char == True:
+            input_tokens = [[c for c in line] for line in input_]
+            output_tokens = [[c for c in line] for line in output_]
+        else:
+            raise NotImplementedError
+        tokens = (input_tokens, output_tokens)
+        data_out[type] = tokens
+        
+    vocab = get_vocabulary()
+    
+    
+
 
 
