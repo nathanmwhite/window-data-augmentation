@@ -32,8 +32,8 @@ TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 # How does decoder_data work? How do you get to the sequential input-outputs in training?
 class TorchDataset(Dataset):
     def __init__(self, encoder_data, decoder_data):
-        self._encoder_data = encoder_data
-        self._decoder_data = decoder_data
+        self._encoder_data = np.asarray(encoder_data, dtype=np.int64)
+        self._decoder_data = np.asarray(decoder_data, dtype=np.int64)
         
     def __len__(self):
         return len(self._encoder_data)
@@ -201,8 +201,9 @@ def create_tf_dataset(encoder_data, decoder_data):
 
     return dataset
 
+
 def create_pt_dataset(encoder_data, decoder_data):
-    pass
+    return TorchDataset(encoder_data, decoder_data)
 
 
 def create_train_test_dataset(train_in_padded,
@@ -212,19 +213,11 @@ def create_train_test_dataset(train_in_padded,
                               tensors='pt'):
     
     if tensors == 'tf':
-        # TODO: revisit this: what's going on here?
         train_dataset = create_tf_dataset(train_in_padded, train_out_padded)
-        #test_dataset = create_tf_dataset(test_in_padded, test_out_padded)
-
-        enc_test_numpy = np.asarray(test_in_padded, dtype=np.int64)
-        enc_test_dataset = tf.data.Dataset.from_tensor_slices(enc_test_numpy)
-
-        dec_test_numpy = np.asarray(test_out_padded, dtype=np.int64)
-        dec_test_dataset = tf.data.Dataset.from_tensor_slices(dec_test_numpy)
-
-        test_dataset = tf.data.Dataset.zip((enc_test_dataset, dec_test_dataset))
+        test_dataset = create_tf_dataset(test_in_padded, test_out_padded)
     elif tensors == 'pt':
-        pass
+        train_dataset = create_pt_dataset(train_in_padded, train_out_padded)
+        test_dataset = create_pt_dataset(test_in_padded, test_out_padded)
     else:
         raise NotImplementedError
     
