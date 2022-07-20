@@ -20,9 +20,29 @@ import pandas as pd
 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+from torch.utils.data import Dataset
+
 from sents_util import retrieve_sents
 
 TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
+
+
+# TODO:
+# Where is batch defined with Torch?
+# How does decoder_data work? How do you get to the sequential input-outputs in training?
+class TorchDataset(Dataset):
+    def __init__(self, encoder_data, decoder_data):
+        self._encoder_data = encoder_data
+        self._decoder_data = decoder_data
+        
+    def __len__(self):
+        return len(self._encoder_data)
+    
+    def __getitem__(self, idx):
+        encoder_input = self._encoder_data[idx]
+        decoder_input = self._decoder_data[idx]
+        
+        return encoder_input, decoder_input
 
 
 def get_windowed_data(datapath):
@@ -181,22 +201,32 @@ def create_tf_dataset(encoder_data, decoder_data):
 
     return dataset
 
+def create_pt_dataset(encoder_data, decoder_data):
+    pass
+
 
 def create_train_test_dataset(train_in_padded,
                               train_out_padded,
                               test_in_padded,
-                              test_out_padded):
+                              test_out_padded,
+                              tensors='pt'):
     
-    train_dataset = create_tf_dataset(train_in_padded, train_out_padded)
-    #test_dataset = create_tf_dataset(test_in_padded, test_out_padded)
+    if tensors == 'tf':
+        # TODO: revisit this: what's going on here?
+        train_dataset = create_tf_dataset(train_in_padded, train_out_padded)
+        #test_dataset = create_tf_dataset(test_in_padded, test_out_padded)
 
-    enc_test_numpy = np.asarray(test_in_padded, dtype=np.int64)
-    enc_test_dataset = tf.data.Dataset.from_tensor_slices(enc_test_numpy)
- 
-    dec_test_numpy = np.asarray(test_out_padded, dtype=np.int64)
-    dec_test_dataset = tf.data.Dataset.from_tensor_slices(dec_test_numpy)
- 
-    test_dataset = tf.data.Dataset.zip((enc_test_dataset, dec_test_dataset))
+        enc_test_numpy = np.asarray(test_in_padded, dtype=np.int64)
+        enc_test_dataset = tf.data.Dataset.from_tensor_slices(enc_test_numpy)
+
+        dec_test_numpy = np.asarray(test_out_padded, dtype=np.int64)
+        dec_test_dataset = tf.data.Dataset.from_tensor_slices(dec_test_numpy)
+
+        test_dataset = tf.data.Dataset.zip((enc_test_dataset, dec_test_dataset))
+    elif tensors == 'pt':
+        pass
+    else:
+        raise NotImplementedError
     
     return test_dataset
 
