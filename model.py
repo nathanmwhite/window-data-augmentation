@@ -8,8 +8,9 @@ __copyright__ = "Copyright © 2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
+import torch
 from torch.nn import Module
-from torch.nn import Embedding, Linear, LSTM, MultiheadAttention, Transformer
+from torch.nn import Embedding, Linear, LSTM, MultiheadAttention, Softmax, Transformer
 
 # TODO: implement the following:
 # 1. Transformer (with four variants)
@@ -18,14 +19,33 @@ from torch.nn import Embedding, Linear, LSTM, MultiheadAttention, Transformer
 # 4. CNN
 # 5. If time: Multilingual BERT
 
-# TODO: finish implementation
+# TODO: finish implementation, or supersede with Luong
 class BahdanauAttention(Module):
     def __init__(self, s_dim, h_dim):
         super(BahdanauAttention, self).__init__()
         self.s_dim = s_dim
         self.h_dim = h_dim
         
+        # initial hidden state not defined in paper: use random tensor
+        # this initial hidden state is essentially s_0
+        # the hidden state should also not be a part of the Attention module itself
+        #self.hidden_state = torch.rand(s_dim, dtype=torch.float32)
         
+        # input is any number of dimensions, with h_dim as the last dimension
+        # output is any number of dimensions, with output_dim as the last dimension
+        # remember that i is the time points of y, j the time points of x
+        self.fnn = Linear(h_dim, h_dim)
+        
+        # should apply softmax to j values for each i
+        self.softmax = Softmax(dim=1)
+    
+    def forward(self, s_previous, encoder_hidden_state):
+        # in an imaginary world, it would be this easy
+        # TODO: figure out what Bahdanau intends with an fnn with two inputs, and fix this
+        e = self.fnn.forward(s_previous, encoder_hidden_state)
+        alpha = self.softmax(e)
+        # TODO: continue implementing
+        interm_sum = torch.matmul(alpha, encoder_hidden_state)
 
 class BilstmEncoder(Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_attention_heads):
