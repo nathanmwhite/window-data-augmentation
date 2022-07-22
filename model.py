@@ -48,7 +48,7 @@ class BahdanauAttention(Module):
         interm_sum = torch.matmul(alpha, encoder_hidden_state)
 
 class BilstmEncoder(Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, num_attention_heads):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(BilstmEncoder, self).__init__()
         self.hidden_dim = hidden_dim
         
@@ -63,15 +63,23 @@ class BilstmEncoder(Module):
                                  batch_first=True)
         # BiLSTM output is (batch size, sequence length, 2*hidden_dim
         # TODO: review to determine whether attention layer should be moved
-        self.attention = MultiheadAttention(self.hidden_dim, num_attention_heads)
         # TODO: how should encoder hidden state be handled?
 #        self.dense_layer = Linear(in_features=self.
 #                                  out_features=output_dim)
+
+    def forward(self, input_data):
+        embeds = self.embedding_layer(input_data)
+        # bilstm_output has shape (batch_size, sequence_length, 2*hidden_size)
+        bilstm_output, _, _ = self.bilstm_layer(embeds)
+        return bilstm_output
+
 
 class BilstmDecoder(Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(BilstmDecoder, self).__init__()
         self.hidden_dim = hidden_dim
+        
+        self.attention = MultiheadAttention(self.hidden_dim, num_attention_heads)
         
         # TODO: implement hidden state, s, and how to output to y
         
