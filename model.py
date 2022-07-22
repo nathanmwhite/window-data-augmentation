@@ -40,8 +40,11 @@ class BahdanauAttention(Module):
         self.softmax = Softmax(dim=1)
     
     def forward(self, s_previous, encoder_hidden_state):
+        # encoder hidden state should be a matrix of j vectors representing each encoder hidden state
         # in an imaginary world, it would be this easy
         # TODO: figure out what Bahdanau intends with an fnn with two inputs, and fix this
+        # with an RNN, how are you going to get s_i-1?
+        # this is too problematic with a separate RNN layer, too time-consuming if restructured inheriting RNN
         e = self.fnn.forward(s_previous, encoder_hidden_state)
         alpha = self.softmax(e)
         # TODO: continue implementing
@@ -80,6 +83,12 @@ class BilstmDecoder(Module):
         self.hidden_dim = hidden_dim
         
         self.attention = MultiheadAttention(self.hidden_dim, num_attention_heads)
+        
+        self.rnn = LSTM(input_size=???,
+                        hidden_size=???,
+                        num_layers=1,
+                        bidirectional=False,
+                        batch_first=True)
         
         # TODO: implement hidden state, s, and how to output to y
         
