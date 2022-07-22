@@ -10,7 +10,7 @@ __author_email__ = "nathan.white1@jcu.edu.au"
 
 import torch
 from torch.nn import Module
-from torch.nn import Embedding, Linear, LSTM, MultiheadAttention, Softmax, Transformer
+from torch.nn import Embedding, Linear, LSTM, MultiheadAttention, RNN, Softmax, Transformer
 
 # TODO: implement the following:
 # 1. Transformer (with four variants)
@@ -38,6 +38,13 @@ class BahdanauAttention(Module):
         
         # should apply softmax to j values for each i
         self.softmax = Softmax(dim=1)
+        
+        # using RNN as single node, stepping through once in each step
+        # TODO: determine input_size and hidden_size
+        self.rnn_node = RNN(input_size=???, hidden_size=???, num_layers=1, batch_first=True)
+        
+        # TODO: determine what the hidden state for the RNN should look like, and initialize with zeros
+        self.s_previous = None
     
     def forward(self, s_previous, encoder_hidden_state):
         # encoder hidden state should be a matrix of j vectors representing each encoder hidden state
@@ -45,10 +52,30 @@ class BahdanauAttention(Module):
         # TODO: figure out what Bahdanau intends with an fnn with two inputs, and fix this
         # with an RNN, how are you going to get s_i-1?
         # this is too problematic with a separate RNN layer, too time-consuming if restructured inheriting RNN
-        e = self.fnn.forward(s_previous, encoder_hidden_state)
+        # TODO: determine how to best concatenate these
+        e = self.fnn.forward(self.s_previous, encoder_hidden_state)
         alpha = self.softmax(e)
-        # TODO: continue implementing
-        interm_sum = torch.matmul(alpha, encoder_hidden_state)
+        # interm_product should have one dimension as i, and the other as j
+        interm_product = torch.matmul(alpha, encoder_hidden_state)
+        
+        # c should have one dimension as i, and c sums over j
+        # TODO: check dimensionality
+        c = torch.sum(interm_product, dim=1)
+        
+        # Bahdanau paper indicates that y_i-1 serves as an input parameter
+        #  to this step; this is impractical, and unlikely
+        y_i_logits, s_i = self.rnn_node(self.s_previous, c)
+        
+        # TODO: check Luong paper again for claims on what Bahdanau does here;
+        #  Bahdanau does not actually specify what g is here
+        
+        
+        y_i = torch.max(y_i_logits)
+        
+        self.s_previous = s_i
+        
+        return y_i
+        
 
 class BilstmEncoder(Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
