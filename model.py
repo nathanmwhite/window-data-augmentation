@@ -20,6 +20,8 @@ from torch.nn import Embedding, Linear, LSTM, MultiheadAttention, RNN, Softmax, 
 # 5. If time: Multilingual BERT
 
 # TODO: finish implementation, or supersede with Luong
+# Bahdanau et al. provide a description that is lacking in numerous details,
+#  precluding a time-effective implementation here
 class BahdanauAttention(Module):
     def __init__(self, s_dim, h_dim):
         super(BahdanauAttention, self).__init__()
@@ -43,8 +45,14 @@ class BahdanauAttention(Module):
         # TODO: determine input_size and hidden_size
         self.rnn_node = RNN(input_size=???, hidden_size=???, num_layers=1, batch_first=True)
         
+        # TODO: determine dimensions
+        self.g = Linear(???, ???)
+        
         # TODO: determine what the hidden state for the RNN should look like, and initialize with zeros
         self.s_previous = None
+        
+        # TODO: set to start token once known
+        self.y_previous = None
     
     def forward(self, s_previous, encoder_hidden_state):
         # encoder hidden state should be a matrix of j vectors representing each encoder hidden state
@@ -64,13 +72,15 @@ class BahdanauAttention(Module):
         
         # Bahdanau paper indicates that y_i-1 serves as an input parameter
         #  to this step; this is impractical, and unlikely
-        y_i_logits, s_i = self.rnn_node(self.s_previous, c)
+        s_i, last_hidden = self.rnn_node(self.s_previous, c)
         
-        # TODO: check Luong paper again for claims on what Bahdanau does here;
-        #  Bahdanau does not actually specify what g is here
-        
-        
-        y_i = torch.max(y_i_logits)
+        # Bahdanau does not actually specify what g is here;
+        #  Luong et al. (2015) suggests that Bahdanau uses a deep output and a maxout for g
+        # Bahdanau indicates that y_i-1, s_i, c_i are inputs into g; does not indicate how
+        #  this would be implemented
+        g_out = self.g(s_i)
+                
+        y_i = torch.max(s_i)
         
         self.s_previous = s_i
         
