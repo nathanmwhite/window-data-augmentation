@@ -39,12 +39,12 @@ def positional_encoding(position, d_model):
     
     pos_encoding = angle_rads[np.newaxis, ...]
     
-    return torch.cuda.FloatTensor(pos_encoding) # changed
+    return torch.FloatTensor(pos_encoding) # changed
 
 
 # from TensorFlow, completely rewritten for PyTorch
 def create_padding_mask(seq):
-    seq = torch.cuda.FloatTensor(torch.eq(seq, 0))
+    seq = torch.FloatTensor(torch.eq(seq, 0))
   
     # add extra dimensions to add the padding
     # to the attention logits.
