@@ -12,7 +12,7 @@ __author_email__ = "nathan.white1@jcu.edu.au"
 import numpy as np
 
 import torch
-from torch.nn import Embedding, Linear, Transformer
+from torch.nn import Embedding, Linear, Softmax, Transformer
 
 
 # code from Tensorflow tutorial website--with final line replaced
@@ -61,10 +61,13 @@ def create_look_ahead_mask(size):
 
 
 # TODO: implement
-def construct_transformer_model():
+def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len):
     # note: torch.nn.Transformer allows multiple layers internally, but it has no clf head
     # it also has no imput embedding layer or position encodings
     # it likewise has no means to generate masks
+    # TODO: ensure all items are on the same device
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    
     class TransformerPredictor(Transformer):
         def __init__(self, vocab_size, d_model, encoder_len, decoder_len, *args, **kwargs):
             super(TransformerPredictor, self).__init__(batch_first=True, d_model, *args, **kwargs)
@@ -72,11 +75,16 @@ def construct_transformer_model():
             self.d_model = d_model
             self.encoder_len = encoder_len
             self.decoder_len = decoder_len
-            self.encoder_embedding_layer = Embedding(vocab_size, ???)
-            self.decoder_embedding_layer = Embedding(vocab_size, ???)
+            self.encoder_embedding_layer = Embedding(num_embeddings=self.vocab_size,
+                                                     embedding_dim=self.d_model,
+                                                     padding_idx=0)
+            self.decoder_embedding_layer = Embedding(num_embeddings=self.vocab_size,
+                                                     embedding_dim=self.d_model,
+                                                     padding_idx=0)
             self.encoder_pos_encoding = positional_encoding(self.encoder_len, self.d_model)
             self.decoder_pos_encoding = positional_encoding(self.decoder_len, self.d_model)
-            self.final_layer = Linear(???, self.vocab_size)
+            self.final_layer = Linear(self.d_model, self.vocab_size)
+            self.softmax = Softmax()
             
         def forward(self, source, target):
             source_embedded = self.encoder_embedding_layer(source)
@@ -124,6 +132,7 @@ def construct_transformer_model():
                                         tgt_key_padding_mask=target_padding_mask)
             # TODO: finish implementation here, check and test all
             out = self.final_layer(processed)
+            y_hat = self.softmax(out)
             
-            return out
+            return y_hat
     
