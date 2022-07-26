@@ -33,7 +33,25 @@ def positional_encoding(position, d_model):
     
     pos_encoding = angle_rads[np.newaxis, ...]
     
-    return torch.cuda.FloatTensor(pos_encoding)
+    return torch.cuda.FloatTensor(pos_encoding) # changed
+
+
+# from TensorFlow, completely rewritten for PyTorch
+def create_padding_mask(seq):
+    seq = torch.cuda.FloatTensor(torch.eq(seq, 0))
+  
+    # add extra dimensions to add the padding
+    # to the attention logits.
+    return seq[:, None, None, :]  # (batch_size, 1, 1, seq_len)
 # end code from Tensorflow website
 
 # TODO: implement Transformer model and training support
+
+
+# TODO: implement
+def construct_transformer_model():
+    # note: torch.nn.Transformer allows multiple layers internally, but it has no clf head
+    # it also has no imput embedding layer or position encodings
+    # it likewise has no means to generate masks
+    pass
+    
