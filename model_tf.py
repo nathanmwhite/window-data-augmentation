@@ -77,17 +77,27 @@ def construct_rnn_attention_model(vocab_size,
     # forward_c,
     # backward_h,
     # backward_c) = encoder_bilstm(encoder_embed)
-    (key_encoded,
-     encoder_state_h,
-     encoder_state_c) = encoder_rnn(encoder_embed)
+    if rnn_type == 'LSTM':
+       (key_encoded,
+        encoder_state_h,
+        encoder_state_c) = encoder_rnn(encoder_embed)
+    else: # GRU
+        (key_encoded,
+         encoder_state) = encoder_rnn(encoder_embed)
     
     #encoder_state_h = concatenate([forward_h, backward_h])
     #encoder_state_c = concatenate([forward_c, backward_c])
     
     decoder_embed = decoder_embedding(decoder_input)
-    (query_encoded,
-     decoder_h,
-     decoder_c) = decoder_rnn(decoder_embed, initial_state=[encoder_state_h, encoder_state_c])
+    
+    if rnn_type == 'LSTM':
+        (query_encoded,
+         decoder_h,
+         decoder_c) = decoder_rnn(decoder_embed, initial_state=[encoder_state_h, encoder_state_c])
+    else: # GRU
+        (query_encoded,
+         decoder_state) = decoder_rnn(decoder_embed, initial_state=[encoder_state])
+        
     attention_context = decoder_attention([query_encoded, key_encoded])
     attentional_concat = concatenate([query_encoded, attention_context])
     hidden_tilde = decoder_attentional_hidden_state(attentional_concat)
