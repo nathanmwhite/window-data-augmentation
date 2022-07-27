@@ -26,7 +26,7 @@ def construct_rnn_attention_model(vocab_size,
     else:
         raise NotImplementedError
     
-    encoder_input = Input((None, encoder_seq_len), name='encoder_input')
+    encoder_input = Input((encoder_seq_len,), name='encoder_input')
     encoder_embedding = Embedding(vocab_size, hidden_size, name='encoder_embedding')
     # Luong et al. only use a stacked unidirectional RNN approach,
     #  in contrast to Bahdanau
@@ -57,12 +57,12 @@ def construct_rnn_attention_model(vocab_size,
                     return_states=True,
                     name='encoder_rnn')
     
-    decoder_input = Input((None, decoder_seq_len), name='decoder_input')
+    decoder_input = Input((decoder_seq_len,), name='decoder_input')
     decoder_embedding = Embedding(vocab_size, hidden_size, name='decoder_embedding')
-    decoder_lstm = RNN_(hidden_size,
+    decoder_rnn = RNN_(hidden_size,
                         return_sequences=True,
                         return_states=True,
-                        name='decoder_lstm')
+                        name='decoder_rnn')
     decoder_attention = Attention(name='attention_layer')
     decoder_attentional_hidden_state = Dense(hidden_size,
                                              activation='tanh', 
