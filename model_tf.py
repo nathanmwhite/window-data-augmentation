@@ -13,7 +13,12 @@ from tensorflow.keras.layers import concatenate
 from tensorflow.keras.models import Model
 
 
-def construct_rnn_attention_model(vocab_size, hidden_size, rnn_type='LSTM', rnn_stack_size=1):
+def construct_rnn_attention_model(vocab_size, 
+                                  hidden_size, 
+                                  encoder_seq_len,
+                                  decoder_seq_len,
+                                  rnn_type='LSTM',
+                                  rnn_stack_size=1):
     if rnn_type == 'LSTM':
         RNN_ = LSTM
     elif rnn_type == 'GRU':
@@ -21,7 +26,7 @@ def construct_rnn_attention_model(vocab_size, hidden_size, rnn_type='LSTM', rnn_
     else:
         raise NotImplementedError
     
-    encoder_input = Input(name='encoder_input')
+    encoder_input = Input((None, encoder_seq_len), name='encoder_input')
     encoder_embedding = Embedding(vocab_size, hidden_size, name='encoder_embedding')
     # Luong et al. only use a stacked unidirectional RNN approach,
     #  in contrast to Bahdanau
@@ -52,7 +57,7 @@ def construct_rnn_attention_model(vocab_size, hidden_size, rnn_type='LSTM', rnn_
                     return_states=True,
                     name='encoder_rnn')
     
-    decoder_input = Input(name='decoder_input')
+    decoder_input = Input((None, decoder_seq_len), name='decoder_input')
     decoder_embedding = Embedding(vocab_size, hidden_size, name='decoder_embedding')
     decoder_lstm = RNN_(hidden_size,
                         return_sequences=True,
@@ -74,7 +79,7 @@ def construct_rnn_attention_model(vocab_size, hidden_size, rnn_type='LSTM', rnn_
     # backward_c) = encoder_bilstm(encoder_embed)
     (key_encoded,
      encoder_state_h,
-     encoder_state_c) = encoder_lstm(encoder_embed)
+     encoder_state_c) = encoder_rnn(encoder_embed)
     
     #encoder_state_h = concatenate([forward_h, backward_h])
     #encoder_state_c = concatenate([forward_c, backward_c])
@@ -82,7 +87,7 @@ def construct_rnn_attention_model(vocab_size, hidden_size, rnn_type='LSTM', rnn_
     decoder_embed = decoder_embedding(decoder_input)
     (query_encoded,
      decoder_h,
-     decoder_c) = decoder_lstm(decoder_embed, initial_state=[encoder_state_h, encoder_state_c])
+     decoder_c) = decoder_rnn(decoder_embed, initial_state=[encoder_state_h, encoder_state_c])
     attention_context = decoder_attention([query_encoded, key_encoded])
     attentional_concat = concatenate([query_encoded, attention_context])
     hidden_tilde = decoder_attentional_hidden_state(attentional_concat)
