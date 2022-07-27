@@ -61,7 +61,7 @@ def create_look_ahead_mask(size):
 
 
 # TODO: implement
-def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len):
+def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len, *args, **kwargs):
     # note: torch.nn.Transformer allows multiple layers internally, but it has no clf head
     # it also has no imput embedding layer or position encodings
     # it likewise has no means to generate masks
@@ -70,7 +70,7 @@ def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len):
     
     class TransformerPredictor(Transformer):
         def __init__(self, vocab_size, d_model, encoder_len, decoder_len, *args, **kwargs):
-            super(TransformerPredictor, self).__init__(batch_first=True, d_model, *args, **kwargs)
+            super(TransformerPredictor, self).__init__(d_model=d_model, batch_first=True, *args, **kwargs)
             self.vocab_size = vocab_size
             self.d_model = d_model
             self.encoder_len = encoder_len
@@ -136,3 +136,4 @@ def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len):
             
             return y_hat
     
+    return TransformerPredictor(vocab_size, d_model, encoder_len, decoder_len, *args, **kwargs)
