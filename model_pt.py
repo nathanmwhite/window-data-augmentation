@@ -102,24 +102,24 @@ def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len, *
             
             # generate masks
             # Note: [src/tgt/memory]_mask ensures that position i is allowed to attend the unmasked positions. 
-            # If a FloatTensor is provided, it will be added to the attention weight.
-            # TODO: make sure this has the same effect as in the original
+            # If a BoolTensor is provided, positions with True are not allowed to attend while False values will be unchanged.
+            # TODO: confirm that this should be receiving a maximum combination of the two masks as in the original TensorFlow
+            #  version; currently coded to do so
             
             # [src/tgt/memory]_key_padding_mask provides specified elements in the key to be ignored by the attention.
             # If a BoolTensor is provided, the positions with the value of True will be ignored while the position with the value of False will be unchanged.
-            # TODO: the padding masks are currently Float; check if this is even possible, or convert to something more appropriate
             
             # "additive mask" prevents leftward information flow
             # "padding mask" is self-explanatory
             
             
-            # Based on Tensorflow tutorial website
+            # Based on logic from Tensorflow tutorial website
             target_lookahead_mask = create_look_ahead_mask(target.size(dim=1))
             
             source_padding_mask = create_padding_mask(source)
             target_padding_mask = create_padding_mask(target)
             
-            target_lookahead_mask = torch.maximum(target_padding_mask, target_lookahead_mask)
+            target_lookahead_mask = torch.maximum(target_padding_mask, target_lookahead_mask).to(torch.bool)
             # end based on
             
             # output is (batch_size, target_seq_len, num_features)
