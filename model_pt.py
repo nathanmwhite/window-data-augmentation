@@ -100,7 +100,7 @@ def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len, *
             encoder_positional_encoding = self.encoder_pos_encoding[:, :encoder_length, :]
             decoder_positional_encoding = self.decoder_pos_encoding[:, :decoder_length, :]
             source_embedded += encoder_positional_encoding
-            target_embedded += decoder_positional_embedding
+            target_embedded += decoder_positional_encoding
             
             # generate masks
             # Note: [src/tgt/memory]_mask ensures that position i is allowed to attend the unmasked positions. 
