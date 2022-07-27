@@ -44,11 +44,9 @@ def positional_encoding(position, d_model):
 
 # from TensorFlow, completely rewritten for PyTorch
 def create_padding_mask(seq):
-    seq = torch.FloatTensor(torch.eq(seq, 0))
+    seq_ = torch.eq(seq, 0)
   
-    # add extra dimensions to add the padding
-    # to the attention logits.
-    return seq[:, None, None, :]  # (batch_size, 1, 1, seq_len)
+    return seq_  # (batch_size, seq_len)
 
 
 # from TensorFlow, completely rewritten for PyTorch
@@ -84,7 +82,7 @@ def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len, *
             self.encoder_pos_encoding = positional_encoding(self.encoder_len, self.d_model)
             self.decoder_pos_encoding = positional_encoding(self.decoder_len, self.d_model)
             self.final_layer = Linear(self.d_model, self.vocab_size)
-            self.softmax = Softmax()
+            self.softmax = Softmax(dim=-1)
             
         def forward(self, source, target):
             source_embedded = self.encoder_embedding_layer(source)
