@@ -9,61 +9,72 @@ __copyright__ = "Copyright © 2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
+import logging
+
+logging.basicConfig(level=logging.INFO, filename='rnn_experiment.log')
 
 # TODO: finish imports
 import tensorflow as tf
 
+from .model_tf import construct_rnn_attention_model
 from .util import wer
 
 
 # From Tensorflow tutorial site
-def loss_function(real, pred):
-    mask = tf.math.logical_not(tf.math.equal(real, 0))
-    loss_ = loss_object(real, pred)
+# def loss_function(real, pred):
+#     mask = tf.math.logical_not(tf.math.equal(real, 0))
+#     loss_ = loss_object(real, pred)
  
-    mask = tf.cast(mask, dtype=loss_.dtype)
-    loss_ *= mask
+#     mask = tf.cast(mask, dtype=loss_.dtype)
+#     loss_ *= mask
   
-    return tf.reduce_sum(loss_)/tf.reduce_sum(mask)
+#     return tf.reduce_sum(loss_)/tf.reduce_sum(mask)
  
  
-def accuracy_function(real, pred):
-    accuracies = tf.equal(real, tf.argmax(pred, axis=2))
+# def accuracy_function(real, pred):
+#     accuracies = tf.equal(real, tf.argmax(pred, axis=2))
   
-    mask = tf.math.logical_not(tf.math.equal(real, 0))
-    accuracies = tf.math.logical_and(mask, accuracies)
+#     mask = tf.math.logical_not(tf.math.equal(real, 0))
+#     accuracies = tf.math.logical_and(mask, accuracies)
  
-    accuracies = tf.cast(accuracies, dtype=tf.float32)
-    mask = tf.cast(mask, dtype=tf.float32)
-    return tf.reduce_sum(accuracies)/tf.reduce_sum(mask)
+#     accuracies = tf.cast(accuracies, dtype=tf.float32)
+#     mask = tf.cast(mask, dtype=tf.float32)
+#     return tf.reduce_sum(accuracies)/tf.reduce_sum(mask)
 
 
-train_step_signature = [
-    tf.TensorSpec(shape=(None, None), dtype=tf.int64),
-    tf.TensorSpec(shape=(None, None), dtype=tf.int64),
-]
- 
-  
-@tf.function(input_signature=train_step_signature)
-def train_step(inp, tar):
-    tar_inp = tar[:, :-1]
-    tar_real = tar[:, 1:]
+# train_step_signature = [
+#     tf.TensorSpec(shape=(None, None), dtype=tf.int64),
+#     tf.TensorSpec(shape=(None, None), dtype=tf.int64),
+# ]
 
-    enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
 
-    with tf.GradientTape() as tape:
-        predictions, _ = transformer(inp, tar_inp, 
-                                     True, 
-                                     enc_padding_mask, 
-                                     combined_mask, 
-                                     dec_padding_mask)
-        loss = loss_function(tar_real, predictions)
+# loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
+#     from_logits=True, reduction='none')
 
-    gradients = tape.gradient(loss, transformer.trainable_variables)    
-    optimizer.apply_gradients(zip(gradients, transformer.trainable_variables))
 
-    train_loss(loss)
-    train_accuracy(accuracy_function(tar_real, predictions))
+# # modified from original version for LSTM/GRU
+# @tf.function(input_signature=train_step_signature)
+# def train_step(inp, tar):
+#     tar_inp = tar[:, :-1]
+#     tar_real = tar[:, 1:]
+    
+#     # Masks are not relevant for LSTM/GRU architecture
+# #     enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
+
+#     with tf.GradientTape() as tape:
+#         # TODO: replace model call with correct one
+#         predictions, _ = transformer(inp, tar_inp, 
+#                                      True, 
+#                                      enc_padding_mask, 
+#                                      combined_mask, 
+#                                      dec_padding_mask)
+#         loss = loss_function(tar_real, predictions)
+
+#     gradients = tape.gradient(loss, transformer.trainable_variables)    
+#     optimizer.apply_gradients(zip(gradients, transformer.trainable_variables))
+
+#     train_loss(loss)
+#     train_accuracy(accuracy_function(tar_real, predictions))
 # end Tensorflow tutorial code
 
 
@@ -71,7 +82,7 @@ def train_step(inp, tar):
 # determine why and replace as necessary
 # it may be that this includes my attempt to incorporate Levenshtein head approach
 #  if so, need to remove
-def evaluate_test(test_data):
+def evaluate_test(test_data, total_vocab, output_len):
     def test_bleu_function(real, pred):
         # real and pred here must be numpy
         bleu_1 = corpus_bleu(real, pred, weights=(1.0,))
@@ -106,7 +117,8 @@ def evaluate_test(test_data):
         #print(type(output))
 
         scorable_output = None
-        for i in range(OUTPUT_LEN):
+        for i in range(output_len):
+            # TODO: replace with appropriate code
             enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
                 input_, output)
             #print(inp)
@@ -116,6 +128,8 @@ def evaluate_test(test_data):
                                                          enc_padding_mask,
                                                          combined_mask,
                                                          dec_padding_mask)
+            # end TODO
+            
             #print(type(predictions))
             predictions = predictions[:, -1:, :]
 
@@ -129,8 +143,8 @@ def evaluate_test(test_data):
 
         #print(output)
         scorable_output = tf.squeeze(output, axis=0)
-        print("Actual: {}".format(' '.join(inv_total_vocab[i] for i in tar.numpy())))
-        print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
+        logging.info("Actual: {}".format(' '.join(inv_total_vocab[i] for i in tar.numpy())))
+        logging.info("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
 
         pad_value = total_vocab['<pad>']
         start_value = total_vocab['<start>']
@@ -167,8 +181,8 @@ def evaluate_test(test_data):
         pred_scorable = np.array([c for line in pred_best_levenshtein for c in line + [total_vocab[' ']]][:-1])
  # to here
 
-        print("Actual: {}".format(' '.join(inv_total_vocab[i] for i in target_scorable)))
-        print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in pred_scorable)))
+        logging.info("Actual: {}".format(' '.join(inv_total_vocab[i] for i in target_scorable)))
+        logging.info("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in pred_scorable)))
 
         bleu_real.append([target_scorable.tolist()])
         bleu_pred.append(pred_scorable.tolist())
@@ -195,37 +209,73 @@ def evaluate_test(test_data):
 
 if __name__ == '__main__':
 # TODO: process command-line args
-# TODO: instantiate model
-# TODO: load data: train_dataset and test_dataset
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--rnn_type', type=str, default='LSTM')
+    parser.add_argument('--hidden_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--epochs', type=int, default=500)
+    args = parser.parse_args()
+# TODO: load vocab
+
+# TODO: load data: train_dataset and test_dataset, get encoder and decoder size
 # TODO: ensure train_dataset gives access to sequence correctly
+
+# instantiate model
+    model = construct_rnn_attention_model(vocab_size,
+                                          args.hidden_size,
+                                          encoder_seq_len,
+                                          decoder_seq_len,
+                                          rnn_type=args.rnn_type,
+                                         )
+
 # TODO: restructure to have print to log file
 
 # begin Tensorflow tutorial code
-    for epoch in range(EPOCHS):
-        start = time.time()
+#     for epoch in range(EPOCHS):
+#         start = time.time()
 
-        train_loss.reset_states()
-        train_accuracy.reset_states()
+#         train_loss.reset_states()
+#         train_accuracy.reset_states()
 
-        # inp -> chars, tar -> words
-        for (batch, (inp, tar)) in enumerate(train_dataset):
-            train_step(inp, tar)
+#         # inp -> chars, tar -> words
+#         for (batch, (inp, tar)) in enumerate(train_dataset):
+#             train_step(inp, tar)
 
-            if batch % 50 == 0:
-                print ('Epoch {} Batch {} Loss {:.4f} Accuracy {:.4f}'.format(
-                    epoch + 1, batch, train_loss.result(), train_accuracy.result()))
+#             if batch % 50 == 0:
+#                 print ('Epoch {} Batch {} Loss {:.4f} Accuracy {:.4f}'.format(
+#                     epoch + 1, batch, train_loss.result(), train_accuracy.result()))
 
-        if (epoch + 1) % 5 == 0:
-            ckpt_save_path = ckpt_manager.save()
-            print ('Saving checkpoint for epoch {} at {}'.format(epoch+1,
-                                                                 ckpt_save_path))
+#         if (epoch + 1) % 5 == 0:
+#             ckpt_save_path = ckpt_manager.save()
+#             print ('Saving checkpoint for epoch {} at {}'.format(epoch+1,
+#                                                                  ckpt_save_path))
 
-        print ('Epoch {} Loss {:.4f} Accuracy {:.4f}'.format(epoch + 1, 
-                                                      train_loss.result(), 
-                                                      train_accuracy.result()))
+#         print ('Epoch {} Loss {:.4f} Accuracy {:.4f}'.format(epoch + 1, 
+#                                                       train_loss.result(), 
+#                                                       train_accuracy.result()))
  # end Tensorflow tutorial code
+    
+# TODO: early stopping
 
-        print ('Time taken for 1 epoch: {} secs\n'.format(time.time() - start))
+# TODO: change metrics code for this task; replace with appropriate Accuracy type
+    pad_token = total_vocab['<pad>']
+    model.compile(optimizer='adam',
+                  loss='categorical_crossentropy',
+                  metrics=[MaskedCategoricalAccuracy(pad_token),
+                           ExactMatchedAccuracy(pad_token)])
+
+# train model
+    history = model.fit(x=[train_en_X, train_fr_X], y=train_fr_Y, batch_size=64,
+                        epochs=500, verbose=1, shuffle=False,
+                        workers=3, use_multiprocessing=True,
+                        #callbacks=[pocket]
+                       )
+
+       # print ('Time taken for 1 epoch: {} secs\n'.format(time.time() - start))
   
     results = evaluate_test(test_dataset)
-    # TODO: write results to log file
+    
+    # write results to log file
+    logging.info(f'Base accuracy: {results[0]}')
+    logging.info(f'BLEU-4: {results[1][3]}')
+    logging.info(f'WER: {results[2]}')
