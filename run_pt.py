@@ -10,6 +10,7 @@ __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
 from .model_pt import construct_transformer_model
+from .util import wer
 
 # TODO: write training and evaluation loop as __main__ loop
 # initial training and evaluation content should appear first as module-level functions
@@ -62,79 +63,71 @@ def train_epoch(idx, training_data_loader, model, loss_function, optimizer, clip
     return batch_loss, continuing_loss, total_loss
   
 
-# TODO: rewrite evaluate to handle BLEU-4 and WER metrics
-# Port from Google Colaboratory-based code
-def evaluate(model, loss_function, eval_dataloader):
+# Ported from Google Colaboratory-based code and converted to PyTorch
+def evaluate(model, loss_function, eval_dataloader, total_vocab, output_len):
+    def test_bleu_function(real, pred):
+        # real and pred here must be numpy
+        bleu_1 = corpus_bleu(real, pred, weights=(1.0,))
+        bleu_2 = corpus_bleu(real, pred, weights=(0.5, 0.5))
+        bleu_3 = corpus_bleu(real, pred, weights=(0.33, 0.33, 0.33))
+        bleu_4 = corpus_bleu(real, pred, weights=(0.25, 0.25, 0.25, 0.25))
+        return (bleu_1, bleu_2, bleu_3, bleu_4)
+    
+    def test_accuracy_function(real, pred):
+        accuracies = torch.eq(real, pred)
+  
+        mask = torch.logical_not(torch.eq(real, 0))
+        accuracies = torch.logical_and(mask, accuracies)
+ 
+        accuracies = accuracies.to(torch.float32)
+        mask = mask.to(torch.float32)
+        # TODO: double-check that sum without a dim specification is correct approach
+        return torch.sum(accuracies)/torch.sum(mask)
+    
     model.eval()
     
     accuracies = []
     bleu_real = []
     bleu_pred = []
     wer_scores = []
-    
+   
+    pad_idx = total_vocab['<pad>']
+    start_idx = total_vocab['<start>']
+    end_idx = total_vocab['<end>']
+
     for i, data_point in enumerate(eval_dataloader):
         inputs, targets = data_point
-        input_ = inputs.unsqueeze(0)
+        encoder_in = inputs.unsqueeze(0)
         
         # needs total_vocab index
         decoder_input = [total_vocab['<start>']]
-        output = decoder_input.unsqueeze(0).to(torch.int64)
+        output_in = decoder_input.unsqueeze(0).to(torch.int64)
         
         scorable_output = None
         # needs access to OUTPUT_LEN
         # TODO: continue here
-        for i in range(OUTPUT_LEN):
-            pass
+        for i in range(output_len):
+            predictions = model(encoder_in, output_in)
+            
+            # TODO: check accuracy of dimensions
+            predictions = predictions[:, -1:, :]
+            
+            predicted_id = torch.argmax(predictions, dim=-1)
+            
+            output_in = torch.cat([output_in, predicted_id], dim=-1)
+            
+            if predicted_id == total_vocab['<end>']:
+                break
         
-        output = model(inputs)
+        scorable_output = output_in.squeeze(dim=0)
         
-        loss = loss_function(output, labels)
-        
-        total_loss += loss.item()
-        
-    return total_loss
-
-  for (inp, tar) in test_data:
-    input_ = tf.expand_dims(inp, 0) 
-    #print(input_)
- 
-    decoder_input = [total_vocab['<start>']]
-    output = tf.cast(tf.expand_dims(decoder_input, 0), tf.int64)
-    #print(output)
-    #print(type(output))
- 
-    scorable_output = None
-    for i in range(OUTPUT_LEN):
-      enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
-          input_, output)
-      #print(inp)
-      predictions, attention_weights = transformer(input_,
-                                                   output,
-                                                   False,
-                                                   enc_padding_mask,
-                                                   combined_mask,
-                                                   dec_padding_mask)
-      #print(type(predictions))
-      predictions = predictions[:, -1:, :]
- 
-      predicted_id = tf.argmax(predictions, axis=-1)
-      #print(predicted_id)
- 
-      output = tf.concat([output, predicted_id], axis=-1)
- 
-      if predicted_id == total_vocab['<end>']:
-        break
- 
-    #print(output)
-    scorable_output = tf.squeeze(output, axis=0)
-    print("Actual: {}".format(' '.join(inv_total_vocab[i] for i in tar.numpy())))
-    print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
- 
-    target_scorable = np.array([i for i in tar.numpy() if i not in [0, 1779, 1780]])
-    #print("target:", target_scorable)
-    pred_scorable = np.array([i for i in scorable_output.numpy() if i not in [0, 1779, 1780]])
-    #print("predicted:", pred_scorable)
- 
+        print("Actual: {}".format(' '.join(inv_total_vocab[i] for i in targets.numpy())))
+        print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
+   
+    # TODO: determine more elegant way to do this
+    target_scorable = np.array([i for i in targets.numpy() if i not in [pad_idx, start_idx, end_idx]])
+    pred_scorable = np.array([i for i in scorable_output.numpy() if i not in [pad_idx, start_idx, end_idx]])
+    
     bleu_real.append([target_scorable.tolist()])
     bleu_pred.append(pred_scorable.tolist())
  
@@ -147,8 +140,8 @@ def evaluate(model, loss_function, eval_dataloader):
         diff = pred_scorable.shape[0] - target_scorable.shape[0]
         target_scorable = np.concatenate((target_scorable, np.zeros((diff,), dtype=np.int32)))
  
-    target_scorable = tf.convert_to_tensor(target_scorable)
-    pred_scorable = tf.convert_to_tensor(pred_scorable)
+    target_scorable = torch.tensor(target_scorable)
+    pred_scorable = tf.tensor(pred_scorable)
  
     acc = test_accuracy_function(target_scorable, pred_scorable)
     accuracies.append(acc)
