@@ -9,6 +9,10 @@ __copyright__ = "Copyright © 2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
+import torch
+
+from torchmetrics import Accuracy
+
 from .model_pt import construct_transformer_model
 from .util import wer
 
@@ -27,6 +31,8 @@ def train_epoch(idx, training_data_loader, model, loss_function, optimizer, clip
     continuing_loss = 0.0
     total_loss = 0.0
     
+    accuracy = Accuracy(num_classes=num_classes)
+    
     for i, data_batch in enumerate(training_data_loader):
         inputs, targets = data_batch
         # TODO: confirm that this has the desired approach
@@ -40,6 +46,13 @@ def train_epoch(idx, training_data_loader, model, loss_function, optimizer, clip
         loss = loss_function(predictions, decoder_out)
         
         loss.backward()
+        
+        label_int_tensor = torch.argmax(targets, axis=-1)
+        
+        labels_cpu = label_int_tensor.to("cpu")
+        outputs_cpu = predictions.to("cpu")
+        
+        batch_accuracy = accuracy(outputs_cpu, labels_cpu)
         
         clip_grad_norm_(filter(lambda x: x.requires_grad, model.parameters()), clip_norm)
                 
@@ -56,28 +69,8 @@ def train_epoch(idx, training_data_loader, model, loss_function, optimizer, clip
             logging.info(loss_message)
             continuing_loss = 0.0
             
-    return batch_loss, continuing_loss, total_loss
-  
-    
-    def train_step(inp, tar):
-  tar_inp = tar[:, :-1]
-  tar_real = tar[:, 1:]
-  
-  enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
-  
-  with tf.GradientTape() as tape:
-    predictions, _ = transformer(inp, tar_inp, 
-                                 True, 
-                                 enc_padding_mask, 
-                                 combined_mask, 
-                                 dec_padding_mask)
-    loss = loss_function(tar_real, predictions)
- 
-  gradients = tape.gradient(loss, transformer.trainable_variables)    
-  optimizer.apply_gradients(zip(gradients, transformer.trainable_variables))
-  
-  train_loss(loss)
-  train_accuracy(accuracy_function(tar_real, predictions))
+    return batch_loss, continuing_loss, total_loss, accuracy.compute()
+
 
 # Ported from Google Colaboratory-based code and converted to PyTorch
 def evaluate(model, loss_function, eval_dataloader, total_vocab, output_len):
