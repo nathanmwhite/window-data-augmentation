@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.INFO, filename='rnn_experiment.log')
 import tensorflow as tf
 
 from .model_tf import construct_rnn_attention_model
+from .prepare_data import load_datasets
 from .util import wer
 
 
@@ -210,16 +211,49 @@ def evaluate_test(test_data, total_vocab, output_len):
 if __name__ == '__main__':
 # TODO: process command-line args
     parser = argparse.ArgumentParser()
+    parser.add_argument('--data_path', type=str, required=True)
+    parser.add_argument('--vocab_path', type=str, required=True)
     parser.add_argument('--rnn_type', type=str, default='LSTM')
     parser.add_argument('--hidden_size', type=int, default=64)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--epochs', type=int, default=500)
+    parser.add_argument('--LA', type=bool, default=False)
+    parser.add_argument('--RA', type=bool, default=False)
+    parser.add_argument('--S3', type=bool, default=False)
+    parser.add_argument('--S5', type=bool, default=False)
+    parser.add_argument('--S7', type=bool, default=False)
+    parser.add_argument('--S9', type=bool, default=False)
+    parser.add_argument('--S11', type=bool, default=False)
+    parser.add_argument('--S13', type=bool, default=False)
     args = parser.parse_args()
-# TODO: load vocab
-
-# TODO: load data: train_dataset and test_dataset, get encoder and decoder size
+    
+# load data and vocab: train_dataset and test_dataset, get encoder and decoder size
 # TODO: ensure train_dataset gives access to sequence correctly
-
+    data_types = ['base']
+    if args.LA:
+        data_types.append('LA')
+    if args.RA:
+        data_types.append('RA')
+    if args.S3:
+        data_types.append('S3')
+    if args.S5:
+        data_types.append('S5')
+    if args.S7:
+        data_types.append('S7')
+    if args.S9:
+        data_types.append('S9')
+    if args.S11:
+        data_types.append('S11')
+    if args.S13:
+        data_types.append('S13')
+        
+    (train_dataset,
+     test_dataset,
+     total_vocab,
+     encoder_seq_len,
+     decoder_seq_len) = load_dataset(args.data_path, args.vocab_path, types=data_types, tensors='tf')
+    vocab_size = len(total_vocab)
+    
 # instantiate model
     model = construct_rnn_attention_model(vocab_size,
                                           args.hidden_size,
@@ -227,8 +261,6 @@ if __name__ == '__main__':
                                           decoder_seq_len,
                                           rnn_type=args.rnn_type,
                                          )
-
-# TODO: restructure to have print to log file
 
 # begin Tensorflow tutorial code
 #     for epoch in range(EPOCHS):
