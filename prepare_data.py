@@ -175,7 +175,7 @@ def generate_windowed_input_output(data, use_char=True):
                                                   padding='post',
                                                   value=vocab['<pad>'])
     
-    return padded_sequences, in_len, out_len
+    return padded_sequences, vocab, in_len, out_len
 
 
 def get_seq_lengths(data):
@@ -236,7 +236,7 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
 #     (total_vocab,
 #      inv_total_vocab,
 #      vocab_sequences) = get_vocabulary(data['base'], vocab_path)
-    padded_sequences, in_len, out_len = generate_windowed_input_output(data)
+    padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data)
 
     data_in = np.concatenate(tuple(data[type][0] for type in types))
     data_out = np.concatenate(tuple(data[type][1] for type in types))
@@ -244,5 +244,5 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
     train_dataset = create_final_dataset(data_in, data_out)
     test_dataset = create_final_dataset(*padded_sequences['test'])
         
-    return train_dataset, test_dataset, in_len, out_len
+    return train_dataset, test_dataset, vocab, in_len, out_len
     
