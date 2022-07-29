@@ -229,8 +229,9 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
     @param tensors (str) : whether to return tensors as PyTorch (pt) or TensorFlow (tf)
     returns: 1. the training dataset of the specified tensor type
              2. the test dataset of the specified tensor type
-             3. the maximum length of encoder inputs
-             4. the maximum length of decoder inputs
+             3. the vocabulary as a dictionary
+             4. the maximum length of encoder inputs
+             5. the maximum length of decoder inputs
     """
     data = get_windowed_data(data_path)
 #     (total_vocab,
