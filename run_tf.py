@@ -217,6 +217,7 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', type=int, default=64)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--epochs', type=int, default=500)
+    parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--LA', type=bool, default=False)
     parser.add_argument('--RA', type=bool, default=False)
     parser.add_argument('--S3', type=bool, default=False)
@@ -287,7 +288,8 @@ if __name__ == '__main__':
 #                                                       train_accuracy.result()))
  # end Tensorflow tutorial code
     
-# TODO: early stopping
+# early stopping
+early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=args.patience)
 
 # TODO: change metrics code for this task; replace with appropriate Accuracy type
     pad_token = total_vocab['<pad>']
@@ -297,10 +299,11 @@ if __name__ == '__main__':
                            ExactMatchedAccuracy(pad_token)])
 
 # train model
-    history = model.fit(x=[train_en_X, train_fr_X], y=train_fr_Y, batch_size=64,
-                        epochs=500, verbose=1, shuffle=False,
+# TODO: update input and output parameters
+    history = model.fit(x=[train_en_X, train_fr_X], y=train_fr_Y, batch_size=args.batch_size,
+                        epochs=args.epochs, verbose=1, shuffle=False,
                         workers=3, use_multiprocessing=True,
-                        #callbacks=[pocket]
+                        callbacks=[early_stopping]
                        )
 
        # print ('Time taken for 1 epoch: {} secs\n'.format(time.time() - start))
