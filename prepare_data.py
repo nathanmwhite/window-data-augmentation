@@ -235,8 +235,8 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
 #      vocab_sequences) = get_vocabulary(data['base'], vocab_path)
     padded_sequences = generate_windowed_input_output(data)
 
-    data_in = np.concatenate((data[type][0] for type in types))
-    data_out = np.concatenate((data[type][1] for type in types))
+    data_in = np.concatenate(tuple(data[type][0] for type in types))
+    data_out = np.concatenate(tuple(data[type][1] for type in types))
     
     train_dataset = create_final_dataset(data_in, data_out)
     test_dataset = create_final_dataset(*padded_sequences['test'])
