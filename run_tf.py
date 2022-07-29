@@ -289,7 +289,7 @@ if __name__ == '__main__':
  # end Tensorflow tutorial code
     
 # early stopping
-early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=args.patience)
+    early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=args.patience)
 
 # TODO: change metrics code for this task; replace with appropriate Accuracy type
     pad_token = total_vocab['<pad>']
