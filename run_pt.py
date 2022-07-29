@@ -133,35 +133,120 @@ def evaluate(model, loss_function, eval_dataloader, total_vocab, output_len):
         print("Actual: {}".format(' '.join(inv_total_vocab[i] for i in targets.numpy())))
         print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
    
-    # TODO: determine more elegant way to do this
-    target_scorable = np.array([i for i in targets.numpy() if i not in [pad_idx, start_idx, end_idx]])
-    pred_scorable = np.array([i for i in scorable_output.numpy() if i not in [pad_idx, start_idx, end_idx]])
-    
-    bleu_real.append([target_scorable.tolist()])
-    bleu_pred.append(pred_scorable.tolist())
- 
-    # if target and predicted are different lengths, then need to pad here
-    if target_scorable.shape[0] != pred_scorable.shape[0]:
-      if target_scorable.shape[0] > pred_scorable.shape[0]:
-        diff = target_scorable.shape[0] - pred_scorable.shape[0]
-        pred_scorable = np.concatenate((pred_scorable, np.zeros((diff,), dtype=np.int32)))
-      else:
-        diff = pred_scorable.shape[0] - target_scorable.shape[0]
-        target_scorable = np.concatenate((target_scorable, np.zeros((diff,), dtype=np.int32)))
- 
-    target_scorable = torch.tensor(target_scorable)
-    pred_scorable = tf.tensor(pred_scorable)
- 
-    acc = test_accuracy_function(target_scorable, pred_scorable)
-    accuracies.append(acc)
- 
-    wer_out = wer(target_scorable, pred_scorable)
-    wer_scores.append(wer_out/len(target_scorable))
-  
-  return np.mean(np.asarray(accuracies)), test_bleu_function(bleu_real, bleu_pred), np.mean(np.asarray(wer_scores))
+        # TODO: determine more elegant way to do this
+        target_scorable = np.array([i for i in targets.numpy() if i not in [pad_idx, start_idx, end_idx]])
+        pred_scorable = np.array([i for i in scorable_output.numpy() if i not in [pad_idx, start_idx, end_idx]])
+
+        bleu_real.append([target_scorable.tolist()])
+        bleu_pred.append(pred_scorable.tolist())
+
+        # if target and predicted are different lengths, then need to pad here
+        if target_scorable.shape[0] != pred_scorable.shape[0]:
+            if target_scorable.shape[0] > pred_scorable.shape[0]:
+                diff = target_scorable.shape[0] - pred_scorable.shape[0]
+                pred_scorable = np.concatenate((pred_scorable, np.zeros((diff,), dtype=np.int32)))
+            else:
+                diff = pred_scorable.shape[0] - target_scorable.shape[0]
+                target_scorable = np.concatenate((target_scorable, np.zeros((diff,), dtype=np.int32)))
+
+        target_scorable = torch.tensor(target_scorable)
+        pred_scorable = tf.tensor(pred_scorable)
+
+        acc = test_accuracy_function(target_scorable, pred_scorable)
+        accuracies.append(acc)
+
+        wer_out = wer(target_scorable, pred_scorable)
+        wer_scores.append(wer_out/len(target_scorable))
+
+    return np.mean(np.asarray(accuracies)), test_bleu_function(bleu_real, bleu_pred), np.mean(np.asarray(wer_scores))
+
+# Ported from Text Summarization Probing  
+class Early_Stopping:
+    def __init__(self, min_delta=0.0, patience=10):
+        self.num_iterations_elapsed = 0
+        self.min_delta = min_delta
+        self.patience = patience
+        self.early_stopping = False
+        self.last_best = None
+
+    def __call__(self, current_loss):
+        if self.last_best == None:
+            self.last_best = current_loss
+        elif self.last_best - current_loss > self.min_delta:
+            self.last_best = current_loss
+            self.num_iterations_elapsed = 0
+        elif self.last_best - current_loss < self.min_delta:
+            self.num_iterations_elapsed += 1
+            if self.num_iterations_elapsed >= self.patience:
+                self.early_stopping = True
 
 
 # in main loop, create model via construct_transformer_model
 # use ported functions to run training and evaluation
 if __name__ == '__main__':
-    pass
+# TODO: process command-line args
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_path', type=str, required=True)
+    parser.add_argument('--vocab_path', type=str, required=True)
+    parser.add_argument('--d_model', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--epochs', type=int, default=500)
+    parser.add_argument('--patience', type=int, default=10)
+    parser.add_argument('--clip_norm', type=float, default=5.0)
+    parser.add_argument('--LA', type=bool, default=False)
+    parser.add_argument('--RA', type=bool, default=False)
+    parser.add_argument('--S3', type=bool, default=False)
+    parser.add_argument('--S5', type=bool, default=False)
+    parser.add_argument('--S7', type=bool, default=False)
+    parser.add_argument('--S9', type=bool, default=False)
+    parser.add_argument('--S11', type=bool, default=False)
+    parser.add_argument('--S13', type=bool, default=False)
+    args = parser.parse_args()
+    
+# load data and vocab: train_dataset and test_dataset, get encoder and decoder size
+# TODO: ensure train_dataset gives access to sequence correctly
+    data_types = ['base']
+    if args.LA:
+        data_types.append('LA')
+    if args.RA:
+        data_types.append('RA')
+    if args.S3:
+        data_types.append('S3')
+    if args.S5:
+        data_types.append('S5')
+    if args.S7:
+        data_types.append('S7')
+    if args.S9:
+        data_types.append('S9')
+    if args.S11:
+        data_types.append('S11')
+    if args.S13:
+        data_types.append('S13')
+        
+    (train_dataset,
+     test_dataset,
+     total_vocab,
+     encoder_seq_len,
+     decoder_seq_len) = load_dataset(args.data_path, args.vocab_path, types=data_types, tensors='pt')
+    vocab_size = len(total_vocab)
+    
+# instantiate model
+    model = construct_transformer_model(vocab_size, args.d_model, encoder_seq_len, decoder_seq_len)
+    
+    model.train()
+    
+    early_stopping = Early_Stopping(patience=args.patience)
+    
+    # TODO: define loss and optimizer
+    loss_function = None
+    optimizer = None
+    # TODO: check whether dataset or dataloader is needed
+    
+    for epoch in range(args.epochs):
+        (batch_loss, 
+         continuing_loss, 
+         total_loss, 
+         acc) = train_epoch(epoch, train_dataset, model, loss_function, optimizer, args.clip_norm)
+
+    # TODO: rest of code here
+    
