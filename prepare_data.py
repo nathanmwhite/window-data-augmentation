@@ -22,7 +22,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from torch.utils.data import Dataset
 
-from sents_util import retrieve_sents
+from .sents_util import retrieve_sents
 
 TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 
@@ -158,7 +158,7 @@ def generate_windowed_input_output(data, use_char=True):
         tokens = (input_tokens, output_tokens)
         data_out[type] = tokens
         
-    vocab, inverse_vocab, vocab_sequences = get_vocabulary()
+    vocab, inverse_vocab, vocab_sequences = get_vocabulary(data['base'])
     
     sequences = encode_sequences(data_out)
     
@@ -206,22 +206,38 @@ def create_pt_dataset(encoder_data, decoder_data):
     return TorchDataset(encoder_data, decoder_data)
 
 
-def create_train_test_dataset(train_in_padded,
-                              train_out_padded,
-                              test_in_padded,
-                              test_out_padded,
-                              tensors='pt'):
+def create_final_dataset(in_padded,
+                         out_padded,
+                         tensors='pt'):
     
     if tensors == 'tf':
-        train_dataset = create_tf_dataset(train_in_padded, train_out_padded)
-        test_dataset = create_tf_dataset(test_in_padded, test_out_padded)
+        dataset = create_tf_dataset(in_padded, out_padded)
     elif tensors == 'pt':
-        train_dataset = create_pt_dataset(train_in_padded, train_out_padded)
-        test_dataset = create_pt_dataset(test_in_padded, test_out_padded)
+        dataset = create_pt_dataset(in_padded, out_padded)
     else:
         raise NotImplementedError
     
-    return test_dataset
+    return dataset
 
-# TODO: after this, model implementation needs to be done
-# LSTM and Transformer have been done previously in Jupyter Notebooks
+
+def load_datasets(data_path, vocab_path, types=['base'], tensors='pt'):
+    """
+    load_datasets : Loads the datasets according to the specified tensor type.
+    @param data_path (str) : the path to the dataset to load
+    @param vocab_path (str) : the path to the saved vocabulary
+    @param types (List[str]) : a list containing the data windows to return
+    @param tensors (str) : whether to return tensors as PyTorch (pt) or TensorFlow (tf)
+    returns dictionary of datasets of the specified tensor type, with keys representing
+        window types
+    """
+    data = get_windowed_data(data_path)
+#     (total_vocab,
+#      inv_total_vocab,
+#      vocab_sequences) = get_vocabulary(data['base'], vocab_path)
+    padded_sequences = generate_windowed_input_output(data)
+    datasets = {}
+    for type in types:
+        datasets[type] = create_final_dataset(*padded_sequences[type])
+        
+    return datasets
+    
