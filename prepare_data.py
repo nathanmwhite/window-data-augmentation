@@ -175,7 +175,7 @@ def generate_windowed_input_output(data, use_char=True):
                                                   padding='post',
                                                   value=vocab['<pad>'])
     
-    return padded_sequences
+    return padded_sequences, in_len, out_len
 
 
 def get_seq_lengths(data):
@@ -227,13 +227,16 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
     @param vocab_path (str) : the path to the saved vocabulary
     @param types (List[str]) : a list containing the data windows to return
     @param tensors (str) : whether to return tensors as PyTorch (pt) or TensorFlow (tf)
-    returns a dataset of the specified tensor type
+    returns: 1. the training dataset of the specified tensor type
+             2. the test dataset of the specified tensor type
+             3. the maximum length of encoder inputs
+             4. the maximum length of decoder inputs
     """
     data = get_windowed_data(data_path)
 #     (total_vocab,
 #      inv_total_vocab,
 #      vocab_sequences) = get_vocabulary(data['base'], vocab_path)
-    padded_sequences = generate_windowed_input_output(data)
+    padded_sequences, in_len, out_len = generate_windowed_input_output(data)
 
     data_in = np.concatenate(tuple(data[type][0] for type in types))
     data_out = np.concatenate(tuple(data[type][1] for type in types))
@@ -241,5 +244,5 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
     train_dataset = create_final_dataset(data_in, data_out)
     test_dataset = create_final_dataset(*padded_sequences['test'])
         
-    return train_dataset, test_dataset
+    return train_dataset, test_dataset, in_len, out_len
     
