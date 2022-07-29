@@ -83,7 +83,7 @@ from .util import wer
 # determine why and replace as necessary
 # it may be that this includes my attempt to incorporate Levenshtein head approach
 #  if so, need to remove
-def evaluate_test(test_data, total_vocab, output_len):
+def evaluate_test(model, test_data, total_vocab, output_len):
     def test_bleu_function(real, pred):
         # real and pred here must be numpy
         bleu_1 = corpus_bleu(real, pred, weights=(1.0,))
@@ -123,12 +123,8 @@ def evaluate_test(test_data, total_vocab, output_len):
             enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
                 input_, output)
             #print(inp)
-            predictions, attention_weights = transformer(input_,
-                                                         output,
-                                                         False,
-                                                         enc_padding_mask,
-                                                         combined_mask,
-                                                         dec_padding_mask)
+            predictions, attention_weights = model((input_, decoder_input),
+                                                   training=False)
             # end TODO
             
             #print(type(predictions))
@@ -300,7 +296,20 @@ if __name__ == '__main__':
 
 # train model
 # TODO: update input and output parameters
-    history = model.fit(x=[train_en_X, train_fr_X], y=train_fr_Y, batch_size=args.batch_size,
+# two options: either split the decoder in/out approach into two entries in the dataset
+#  or create a custom model with its own built-in train_step
+# other considerations:
+#  1. The original approach was for Transformer, which uses masks to deal with the different
+#      stages of generation
+#  2. LSTM and GRU don't have masking as an automatic feature
+#      so unclear what happens if you include Transformer-style data without masking
+#  3. One recommended approach for LSTM is to use a single sequence-length window to predict
+#      the next in sequence; this is not at all the same as the windowed augmentation approach,
+#      but predicting the next item based on a fixed length is what is done
+# decision: redo dataset approaches such that the data is generated with a sequence followed by
+#  the next prediction as a single item, which will result in a dataset with two inputs, one output
+# if there is a mask option to implement, it could be useful, but may be too time-consuming
+    history = model.fit(train_dataset, batch_size=args.batch_size,
                         epochs=args.epochs, verbose=1, shuffle=False,
                         workers=3, use_multiprocessing=True,
                         callbacks=[early_stopping]
