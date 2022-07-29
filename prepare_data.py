@@ -220,24 +220,25 @@ def create_final_dataset(in_padded,
     return dataset
 
 
-def load_datasets(data_path, vocab_path, types=['base'], tensors='pt'):
+def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
     """
-    load_datasets : Loads the datasets according to the specified tensor type.
+    load_dataset : Loads the dataset according to the specified tensor type.
     @param data_path (str) : the path to the dataset to load
     @param vocab_path (str) : the path to the saved vocabulary
     @param types (List[str]) : a list containing the data windows to return
     @param tensors (str) : whether to return tensors as PyTorch (pt) or TensorFlow (tf)
-    returns dictionary of datasets of the specified tensor type, with keys representing
-        window types
+    returns a dataset of the specified tensor type
     """
     data = get_windowed_data(data_path)
 #     (total_vocab,
 #      inv_total_vocab,
 #      vocab_sequences) = get_vocabulary(data['base'], vocab_path)
     padded_sequences = generate_windowed_input_output(data)
-    datasets = {}
-    for type in types:
-        datasets[type] = create_final_dataset(*padded_sequences[type])
+
+    data_in = np.concatenate((data[type][0] for type in types))
+    data_out = np.concatenate((data[type][1] for type in types))
+    
+    dataset = create_final_dataset(data_in, data_out)
         
-    return datasets
+    return dataset
     
