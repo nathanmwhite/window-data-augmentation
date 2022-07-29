@@ -238,7 +238,8 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
     data_in = np.concatenate((data[type][0] for type in types))
     data_out = np.concatenate((data[type][1] for type in types))
     
-    dataset = create_final_dataset(data_in, data_out)
+    train_dataset = create_final_dataset(data_in, data_out)
+    test_dataset = create_final_dataset(*padded_sequences['test'])
         
-    return dataset
+    return train_dataset, test_dataset
     
