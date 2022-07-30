@@ -28,6 +28,12 @@ from .sents_util import join_sents, retrieve_sents
 
 TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 
+# Note:
+# This code has been tested and works as of 30 July 2022.
+# It contains one remaining issue: the character-based approach
+#  still does not support certain tags in the data, such as [name].
+# TODO: These still need to be addressed.
+
 
 # TODO:
 # Where is batch defined with Torch?
