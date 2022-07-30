@@ -64,7 +64,7 @@ def get_windowed_data(datapath):
 
     for i in training_text_indices:
         try:
-            f = open(os.path.join(datapath, 'text ' + str(i) + ' preprocess.txt'), 'r')
+            f = open(os.path.join(datapath, 'text ' + str(i) + ' preprocess.txt'), 'r', encoding='utf8')
         except OSError as e:
             logging.debug(e)
         item_stream = f.readlines()
@@ -81,7 +81,7 @@ def get_windowed_data(datapath):
         sliding_13_data += retrieve_sents(item_stream, lim_slide=True, lim=13)
 
     for i in test_text_indices:
-        f = open('text ' + str(i) + ' preprocess.txt', 'r')
+        f = open(os.path.join(datapath, 'text ' + str(i) + ' preprocess.txt'), 'r', encoding='utf8')
         item_stream = f.readlines()
         f.close()
 
