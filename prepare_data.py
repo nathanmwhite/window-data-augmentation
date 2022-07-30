@@ -16,6 +16,8 @@ logging.basicConfig(level=logging.DEBUG, filename='prepare_data.log')
 
 import os
 
+import numpy as np
+
 import pandas as pd
 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
