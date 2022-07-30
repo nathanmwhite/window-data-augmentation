@@ -24,7 +24,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from torch.utils.data import Dataset
 
-from .sents_util import retrieve_sents
+from .sents_util import join_sents, retrieve_sents
 
 TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 
@@ -101,19 +101,18 @@ def get_windowed_data(datapath):
             'test': test_data}
 
 
-def get_vocabulary(base_data, path='ywl_vocab.csv', use_char=True):
+def get_vocabulary(base_data, test_data, path='ywl_vocab.csv', use_char=True):
     vocab_df = pd.read_csv(path, delimiter='\t')
     vocab = vocab_df['word'].dropna().to_numpy().tolist()
     
-    # TODO: review for current accuracy and relevance
-    charset = set([c for line in base_data[0]+base_data[1] for c in line])
+    encoder_charset = set([c for line in base_data[0]+test_data[0] for c in line])
     vocab_letters = list(set([c for line in vocab for c in line]))
     #vocab_letters = vocab
-    letterset = list(set([c for line in train_output+test_output for c in line])) + vocab_letters
+    decoder_charset = list(set([c for line in base_data[1]+test_data[1] for c in line if c != '¤'])) + vocab_letters
 
-    complete_set = charset.union(letterset)
+    complete_set = encoder_charset.union(decoder_charset)
 
-    complete_set = ['<pad>'] + list(complete_set) + ['<start>', '<end>']
+    complete_set = ['<pad>', '<start>', '<end>', '<unk>'] + list(complete_set)
 
     total_vocab = {k: i for (i, k) in enumerate(complete_set)}
 
@@ -126,23 +125,24 @@ def get_vocabulary(base_data, path='ywl_vocab.csv', use_char=True):
 
 # TODO: review and revise
 # add a start and end token to the input and target
-def encode(lang1, lang2):
-  start_token = total_vocab['<start>']
-  end_token = total_vocab['<end>']
-  lang1 = [start_token] + [total_vocab[w] for w in lang1] \
-           + [end_token]
+def encode(encoder_line, decoder_line, total_vocab):
+    start_token = total_vocab['<start>']
+    end_token = total_vocab['<end>']
+    unk_token = total_vocab['<unk>']
+    encoded_in = [start_token] + [total_vocab[w] for w in encoder_line] \
+                  + [end_token]
 
-  lang2 = [start_token] + [total_vocab[w] for w in lang2] \
-           + [end_token]
-  
-  return lang1, lang2
+    encoded_out = [start_token] + [total_vocab[w] if w != '¤' else unk_token for w in decoder_line] \
+                   + [end_token]
+
+    return encoded_in, encoded_out
 
 
 # TODO: review to ensure two different types of combination have not been conflated
-def encode_sequences(data):
+def encode_sequences(data, total_vocab):
     sequences = {}
     for type in TYPES:
-        sequences[type] = zip(*[encode(a, b) for a, b in zip(data[type][0], data[type][1])])
+        sequences[type] = tuple(zip(*[encode(a, b, total_vocab) for a, b in zip(data[type][0], data[type][1])]))
     
     return sequences
 
@@ -160,22 +160,23 @@ def generate_windowed_input_output(data, use_char=True):
         tokens = (input_tokens, output_tokens)
         data_out[type] = tokens
         
-    vocab, inverse_vocab, vocab_sequences = get_vocabulary(data['base'])
+    vocab, inverse_vocab, vocab_sequences = get_vocabulary(data_out['base'], data_out['test'])
     
-    sequences = encode_sequences(data_out)
+    sequences = encode_sequences(data_out, vocab)
     
     in_len, out_len = get_seq_lengths(data_out)
     
     padded_sequences = {}
     for type in TYPES:
-        padded_sequences[type][0] = pad_sequences(sequences[type][0],
+        padded_in = pad_sequences(sequences[type][0],
                                                   maxlen=in_len,
                                                   padding='post',
                                                   value=vocab['<pad>'])
-        padded_sequences[type][1] = pad_sequences(sequences[type][1],
+        padded_out = pad_sequences(sequences[type][1],
                                                   maxlen=out_len,
                                                   padding='post',
                                                   value=vocab['<pad>'])
+        padded_sequences[type] = (padded_in, padded_out)
     
     return padded_sequences, vocab, in_len, out_len
 
@@ -241,8 +242,8 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
 #      vocab_sequences) = get_vocabulary(data['base'], vocab_path)
     padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data)
 
-    data_in = np.concatenate(tuple(data[type][0] for type in types))
-    data_out = np.concatenate(tuple(data[type][1] for type in types))
+    data_in = np.concatenate(tuple(padded_sequences[type][0] for type in types))
+    data_out = np.concatenate(tuple(padded_sequences[type][1] for type in types))
     
     train_dataset = create_final_dataset(data_in, data_out)
     test_dataset = create_final_dataset(*padded_sequences['test'])
