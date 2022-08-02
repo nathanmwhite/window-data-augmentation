@@ -32,9 +32,11 @@ TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 # This code has been tested and works as of 30 July 2022.
 # Testing with real data shows that it produces outputs that
 #  look and behave exactly as expected.
-# It contains one remaining issue: the character-based approach
-#  still does not support certain tags in the data, such as [name].
-# TODO: These still need to be addressed.
+# TODO:
+# Remaining issues:
+# 1. The character-based approach
+#     still does not support certain tags in the data, such as [name].
+# 2. The tf dataset format needs to be tested.
 
 
 # TODO:
