@@ -323,7 +323,15 @@ if __name__ == '__main__':
        # print ('Time taken for 1 epoch: {} secs\n'.format(time.time() - start))
   
     results = evaluate_test(test_dataset)
-    
+        
+    hyperparam_set = ('rnn_test',
+                      args.rnn_type,
+                      args.d_model,
+                      args.batch_size,
+                      args.lr,
+                      args.epochs)
+    message = f"Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
+    logging.info(message)
     # write results to log file
     logging.info(f'Base accuracy: {results[0]}')
     logging.info(f'BLEU-4: {results[1][3]}')
