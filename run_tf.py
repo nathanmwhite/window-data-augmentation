@@ -22,7 +22,7 @@ import tensorflow as tf
 from nltk.translate.bleu_score import corpus_bleu
 
 from .model_tf import construct_rnn_attention_model
-from .prepare_data import load_datasets
+from .prepare_data import load_dataset
 from .util import wer
 
 
