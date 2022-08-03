@@ -9,6 +9,10 @@ __copyright__ = "Copyright © 2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
+import logging
+
+logging.basicConfig(level=logging.INFO, filename='run_pt.log')
+
 import torch
 
 from torchmetrics import Accuracy
@@ -181,6 +185,20 @@ class Early_Stopping:
                 self.early_stopping = True
 
 
+# Ported from Tensorflow tutorial code; adapted for PyTorch
+def masked_loss_function(real, pred):
+    loss = torch.nn.CrossEntropyLoss(reduction='none')
+    
+    mask = torch.logical_not(torch.eq(real, 0))
+    loss_result = loss(real, pred)
+
+    mask = mask.to(loss_result.dtype)
+    loss_result *= mask
+
+    return torch.sum(loss_result)/torch.sum(mask)
+# end ported
+
+
 # in main loop, create model via construct_transformer_model
 # use ported functions to run training and evaluation
 if __name__ == '__main__':
@@ -191,6 +209,7 @@ if __name__ == '__main__':
     parser.add_argument('--d_model', type=int, default=64)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--epochs', type=int, default=500)
+    parser.add_argument('--lr', type=float, default=3e-04)
     parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--clip_norm', type=float, default=5.0)
     parser.add_argument('--LA', type=bool, default=False)
@@ -228,25 +247,62 @@ if __name__ == '__main__':
      total_vocab,
      encoder_seq_len,
      decoder_seq_len) = load_dataset(args.data_path, args.vocab_path, types=data_types, tensors='pt')
+    
+    # Wrap datasets into DataLoader objects
+    training_dataloader = DataLoader(train_dataset, 
+                                     batch_size=args.batch_size, 
+                                     shuffle=True)
+    test_dataloader = DataLoader(test_dataset, 
+                                 batch_size=1, 
+                                 shuffle=True)
+    
     vocab_size = len(total_vocab)
     
-# instantiate model
+    # instantiate model
     model = construct_transformer_model(vocab_size, args.d_model, encoder_seq_len, decoder_seq_len)
     
     model.train()
     
     early_stopping = Early_Stopping(patience=args.patience)
     
-    # TODO: define loss and optimizer
-    loss_function = None
-    optimizer = None
-    # TODO: check whether dataset or dataloader is needed
+    # define loss and optimizer
+    # from the original Transformer implementations:
+    #  one version uses standard categorical_crossentropy,
+    #  the other a more complicated one with the mask applied
+    # here, I use cross-entropy with masking
+    loss_function = masked_loss_function
+    optimizer = torch.optim.Adam(lr=args.lr, betas=(0.9, 0.98), epsilon=1e-9)
     
+    # training accuracy here considers all positions, including masked positions
+    # this ensures that randomly generated elements inside padding penalize
+    #  the accuracy metric
     for epoch in range(args.epochs):
         (batch_loss, 
-         continuing_loss, 
+         continuing_loss,
          total_loss, 
-         acc) = train_epoch(epoch, train_dataset, model, loss_function, optimizer, args.clip_norm)
+         acc) = train_epoch(epoch, train_dataloader, model, loss_function, optimizer, args.clip_norm)
+        
+        if args.early_stopping:
+            early_stopping(total_loss)
+            if early_stopping.early_stopping == True:
+                message = f'Early stopping of training at epoch {epoch}.'
+                logging.info(message)
+                break
 
-    # TODO: rest of code here
-    
+    am.eval()
+    with torch.no_grad():
+        results = evaluate(model, loss_function, test_dataloader, total_vocab, decoder_seq_len)
+        
+    hyperparam_set = ('transformer_test',
+                      args.d_model,
+                      args.batch_size,
+                      args.lr,
+                      args.epochs)
+    message = f"Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
+    logging.info(message)
+    message = f"Test raw accuracy: {results[0]}"
+    logging.info(message)
+    message = f"Test BLEU-4: {results[1][3]}"
+    logging.info(message)
+    message = f"Test WER: {results[2]}"
+    logging.info(message)
