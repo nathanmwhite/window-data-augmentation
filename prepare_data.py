@@ -192,6 +192,7 @@ def generate_windowed_input_output(data, use_char=True):
     
     return padded_sequences, vocab, in_len, out_len
 
+
 # Note: this is intended to produce seq lengths post-encode
 def get_seq_lengths(data):
     input_len = max([len(line) for line in data['base'][0]] + \
