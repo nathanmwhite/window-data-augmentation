@@ -9,9 +9,13 @@ __copyright__ = "Copyright © 2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
+import argparse
+
 import logging
 
 logging.basicConfig(level=logging.INFO, filename='run_pt.log')
+
+import numpy as np
 
 import torch
 
@@ -154,7 +158,7 @@ def evaluate(model, loss_function, eval_dataloader, total_vocab, output_len):
                 target_scorable = np.concatenate((target_scorable, np.zeros((diff,), dtype=np.int32)))
 
         target_scorable = torch.tensor(target_scorable)
-        pred_scorable = tf.tensor(pred_scorable)
+        pred_scorable = torch.tensor(pred_scorable)
 
         acc = test_accuracy_function(target_scorable, pred_scorable)
         accuracies.append(acc)
