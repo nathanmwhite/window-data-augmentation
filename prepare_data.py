@@ -138,7 +138,6 @@ def get_vocabulary(base_data, test_data, path='ywl_vocab.csv', use_char=True):
     return total_vocab, inv_total_vocab, vocab_sequences
 
 
-# TODO: review and revise
 # add a start and end token to the input and target
 def encode(encoder_line, decoder_line, total_vocab):
     start_token = total_vocab['<start>']
@@ -153,7 +152,6 @@ def encode(encoder_line, decoder_line, total_vocab):
     return encoded_in, encoded_out
 
 
-# TODO: review to ensure two different types of combination have not been conflated
 def encode_sequences(data, total_vocab):
     sequences = {}
     for type in TYPES:
@@ -162,7 +160,6 @@ def encode_sequences(data, total_vocab):
     return sequences
 
 
-# TODO: finish implementation
 def generate_windowed_input_output(data, use_char=True):
     data_out = {}
     for type in TYPES:
@@ -254,9 +251,7 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
              5. the maximum length of decoder inputs
     """
     data = get_windowed_data(data_path)
-#     (total_vocab,
-#      inv_total_vocab,
-#      vocab_sequences) = get_vocabulary(data['base'], vocab_path)
+
     padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data)
 
     encoder_data = np.concatenate(tuple(padded_sequences[type][0] for type in types))
