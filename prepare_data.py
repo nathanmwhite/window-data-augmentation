@@ -37,6 +37,7 @@ TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 # 1. The character-based approach
 #     still does not support certain tags in the data, such as [name].
 # 2. The tf dataset format needs to be tested.
+# 3. The new version handling decoder_output must be tested.
 
 
 # TODO:
@@ -52,9 +53,13 @@ class TorchDataset(Dataset):
     
     def __getitem__(self, idx):
         encoder_input = self._encoder_data[idx]
-        decoder_input = self._decoder_data[idx]
+        decoder_data = self._decoder_data[idx]
         
-        return encoder_input, decoder_input
+        # assumes <end> is embedded in sequence
+        decoder_input = decoder_data[:, :-1] 
+        decoder_output = decoder_data[:, 1:]
+        
+        return encoder_input, decoder_input, decoder_output
 
 
 def get_windowed_data(datapath):
@@ -190,12 +195,13 @@ def generate_windowed_input_output(data, use_char=True):
     
     return padded_sequences, vocab, in_len, out_len
 
-
+# Note: this is intended to produce seq lengths post-encode
 def get_seq_lengths(data):
     input_len = max([len(line) for line in data['base'][0]] + \
                     [len(line) for line in data['test'][0]])
+    # -1 to handle offset between decoder input and output
     output_len = max([len(line) for line in data['base'][1]] + \
-                     [len(line) for line in data['test'][1]])
+                     [len(line) for line in data['test'][1]]) - 1
     return input_len, output_len
 
     
@@ -204,9 +210,10 @@ def create_tf_dataset(encoder_data, decoder_data):
     enc_dataset = tf.data.Dataset.from_tensor_slices(enc_numpy)
 
     dec_numpy = np.asarray(decoder_data, dtype=np.int64)
-    dec_dataset = tf.data.Dataset.from_tensor_slices(dec_numpy)
+    dec_input_dataset = tf.data.Dataset.from_tensor_slices(dec_numpy[:, :-1])
+    dec_output_dataset = tf.data.Dataset.from_tensor_slices(dec_numpy[:, 1:])
 
-    dataset = tf.data.Dataset.zip((enc_dataset, dec_dataset))
+    dataset = tf.data.Dataset.zip((enc_dataset, dec_input_dataset, dec_output_dataset))
 
     dataset = dataset.cache()
     dataset = dataset.padded_batch(BATCH_SIZE)
@@ -252,10 +259,10 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
 #      vocab_sequences) = get_vocabulary(data['base'], vocab_path)
     padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data)
 
-    data_in = np.concatenate(tuple(padded_sequences[type][0] for type in types))
-    data_out = np.concatenate(tuple(padded_sequences[type][1] for type in types))
+    encoder_data = np.concatenate(tuple(padded_sequences[type][0] for type in types))
+    decoder_data = np.concatenate(tuple(padded_sequences[type][1] for type in types))
     
-    train_dataset = create_final_dataset(data_in, data_out)
+    train_dataset = create_final_dataset(encoder_data, decoder_data)
     test_dataset = create_final_dataset(*padded_sequences['test'])
         
     return train_dataset, test_dataset, vocab, in_len, out_len
