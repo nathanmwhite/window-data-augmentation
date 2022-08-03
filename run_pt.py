@@ -22,6 +22,7 @@ import torch
 from torchmetrics import Accuracy
 
 from .model_pt import construct_transformer_model
+from .prepare_data import load_dataset
 from .util import wer
 
 # TODO: write training and evaluation loop as __main__ loop
