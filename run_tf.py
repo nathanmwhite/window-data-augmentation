@@ -9,12 +9,17 @@ __copyright__ = "Copyright © 2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
+import argparse
+
 import logging
 
 logging.basicConfig(level=logging.INFO, filename='rnn_experiment.log')
 
-# TODO: finish imports
+import numpy as np
+
 import tensorflow as tf
+
+from nltk.translate.bleu_score import corpus_bleu
 
 from .model_tf import construct_rnn_attention_model
 from .prepare_data import load_datasets
