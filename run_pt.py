@@ -25,16 +25,10 @@ from .model_pt import construct_transformer_model
 from .prepare_data import load_dataset
 from .util import wer
 
-# TODO: write training and evaluation loop as __main__ loop
-# initial training and evaluation content should appear first as module-level functions
-# For PyTorch, these should be adapted from Text Summarization Number Probing repo
-# evaluation must be modified to handle Window Data Augmentation data and task
 
 # train_epoch is from Text Summarization Number Probing repo
-# TODO: train_epoch needs to handle the fact that training steps have to be offset
-#  decoder_in = tar[:, :-1], decoder_out = tar[:, 1:]
 #  check to make sure this approach also handles <end> as would be expected
-#  also has to handle the fact that the data has a decoder input and output throughout
+#  also handles the fact that the data has a decoder input and output throughout
 def train_epoch(idx, training_data_loader, model, loss_function, optimizer, clip_norm):
     batch_loss = 0.0
     continuing_loss = 0.0
@@ -43,10 +37,10 @@ def train_epoch(idx, training_data_loader, model, loss_function, optimizer, clip
     accuracy = Accuracy(num_classes=num_classes)
     
     for i, data_batch in enumerate(training_data_loader):
-        inputs, targets = data_batch
-        # TODO: confirm that this has the desired approach
-        decoder_in = targets[:, :-1]
-        decoder_out = targets[:, 1:]
+        inputs, decoder_in, decoder_out = data_batch
+        # This has been superseded by implementation in the training datasets
+#         decoder_in = targets[:, :-1]
+#         decoder_out = targets[:, 1:]
         
         optimizer.zero_grad()
         
@@ -56,7 +50,8 @@ def train_epoch(idx, training_data_loader, model, loss_function, optimizer, clip
         
         loss.backward()
         
-        label_int_tensor = torch.argmax(targets, axis=-1)
+        # TODO: the following line is obsolete; replace with current version
+        label_int_tensor = torch.argmax(decoder_out, axis=-1)
         
         labels_cpu = label_int_tensor.to("cpu")
         outputs_cpu = predictions.to("cpu")
