@@ -152,31 +152,31 @@ def evaluate_test(model, test_data, total_vocab, output_len):
         pred_scorable = np.array([i for i in scorable_output.numpy() if i not in [pad_value, start_value, end_value]])
         #print("predicted:", pred_scorable)
 
- # TODO: check especially from here
-        def get_word_sequences(pred_array):
-            word_sequences = []
-            word = []
-            for item in pred_array:
-                if item == total_vocab[' ']:
-                    word_sequences.append(word)
-                else:
-                    word.append(item)
-            if len(word) > 0:
-                word_sequences.append(word)
-            return word_sequences
+#  # TODO: check especially from here
+#         def get_word_sequences(pred_array):
+#             word_sequences = []
+#             word = []
+#             for item in pred_array:
+#                 if item == total_vocab[' ']:
+#                     word_sequences.append(word)
+#                 else:
+#                     word.append(item)
+#             if len(word) > 0:
+#                 word_sequences.append(word)
+#             return word_sequences
 
-        def get_best_words_levenshtein(pred_char_num_sequences):
-            results = []
-            for item in pred_char_num_sequences:
-                best_idx = np.argmin(np.array([levenshtein(item, i) for i in vocab_sequences]))
-                results.append(vocab_sequences[best_idx])
-            return results
+#         def get_best_words_levenshtein(pred_char_num_sequences):
+#             results = []
+#             for item in pred_char_num_sequences:
+#                 best_idx = np.argmin(np.array([levenshtein(item, i) for i in vocab_sequences]))
+#                 results.append(vocab_sequences[best_idx])
+#             return results
 
-        pred_word_sequences = get_word_sequences(pred_scorable)
-        pred_best_levenshtein = get_best_words_levenshtein(pred_word_sequences)
+#         pred_word_sequences = get_word_sequences(pred_scorable)
+#         pred_best_levenshtein = get_best_words_levenshtein(pred_word_sequences)
 
-        pred_scorable = np.array([c for line in pred_best_levenshtein for c in line + [total_vocab[' ']]][:-1])
- # to here
+#         pred_scorable = np.array([c for line in pred_best_levenshtein for c in line + [total_vocab[' ']]][:-1])
+#  # to here
 
         logging.info("Actual: {}".format(' '.join(inv_total_vocab[i] for i in target_scorable)))
         logging.info("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in pred_scorable)))
