@@ -40,9 +40,7 @@ TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 # 3. The new version handling decoder_output must be tested.
 
 
-# TODO:
-# Where is batch defined with Torch?
-# How does decoder_data work? How do you get to the sequential input-outputs in training?
+# Batching is handled in PyTorch by the DataLoader, which is implemented in run_pt.py
 class TorchDataset(Dataset):
     def __init__(self, encoder_data, decoder_data):
         self._encoder_data = np.asarray(encoder_data, dtype=np.int64)
