@@ -8,9 +8,6 @@ __copyright__ = "Copyright © 2020-2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
-# TODO: check comments below for handling issues and correct
-# See line 32
-
 import re
 
 
@@ -32,7 +29,8 @@ def retrieve_sents(data_stream,
         # j + 1 because otherwise initial sequences would have len > lim
         for i in range(j + 1):
           slides[i].append(item)
-      # currently, this doesn't handle the last several instances correctly
+      # previous comment: this doesn't handle the last several instances correctly
+      # confirmed already fixed as of 4 August 2022
       else:
         # check modulo, and add to sents, and clear dict entry
         current_slide = j % lim
