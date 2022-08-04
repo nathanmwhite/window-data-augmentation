@@ -11,6 +11,9 @@ __author_email__ = "nathan.white1@jcu.edu.au"
 # TODO: check comments below for handling issues and correct
 # See line 32
 
+import re
+
+
 def retrieve_sents(data_stream, 
                    left_slide=False, 
                    right_slide=False, 
