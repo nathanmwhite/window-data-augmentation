@@ -19,6 +19,8 @@ import numpy as np
 
 import torch
 
+from torch.utils.data import DataLoader
+
 from torchmetrics import Accuracy
 
 from .model_pt import construct_transformer_model
