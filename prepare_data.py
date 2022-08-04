@@ -40,6 +40,7 @@ TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 # 3. The new version handling decoder_output must be tested.
 # 4. Confirm that the unfinished sequences are adequately handled by both pt and
 #     tf implementations.
+# 5. Confirm that the dimensionality specified for data slices in dataset are correct.
 
 
 # Batching is handled in PyTorch by the DataLoader, which is implemented in run_pt.py
