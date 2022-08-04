@@ -251,7 +251,7 @@ if __name__ == '__main__':
      decoder_seq_len) = load_dataset(args.data_path, args.vocab_path, types=data_types, tensors='pt')
     
     # Wrap datasets into DataLoader objects
-    training_dataloader = DataLoader(train_dataset, 
+    train_dataloader = DataLoader(train_dataset, 
                                      batch_size=args.batch_size, 
                                      shuffle=True)
     test_dataloader = DataLoader(test_dataset, 
