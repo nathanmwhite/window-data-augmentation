@@ -116,10 +116,7 @@ def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len, *
             
             source_padding_mask = create_padding_mask(source)
             target_padding_mask = create_padding_mask(target)
-            
-            target_lookahead_mask = torch.maximum(target_padding_mask, target_lookahead_mask).to(torch.bool)
-            # end based on
-            
+                   
             # output is (batch_size, target_seq_len, num_features)
             processed = super().forward(source_embedded, 
                                         target_embedded, 
