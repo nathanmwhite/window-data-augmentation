@@ -273,7 +273,7 @@ if __name__ == '__main__':
     #  the other a more complicated one with the mask applied
     # here, I use cross-entropy with masking
     loss_function = masked_loss_function
-    optimizer = torch.optim.Adam(lr=args.lr, betas=(0.9, 0.98), epsilon=1e-9)
+    optimizer = torch.optim.Adam(lr=args.lr, betas=(0.9, 0.98), eps=1e-9)
     
     # training accuracy here considers all positions, including masked positions
     # this ensures that randomly generated elements inside padding penalize
