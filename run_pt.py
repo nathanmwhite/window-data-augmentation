@@ -192,7 +192,7 @@ def masked_loss_function(real, pred):
     loss = torch.nn.CrossEntropyLoss(reduction='none')
     
     mask = torch.logical_not(torch.eq(real, 0))
-    loss_result = loss(real, pred)
+    loss_result = loss(pred, real)
 
     mask = mask.to(loss_result.dtype)
     loss_result *= mask
