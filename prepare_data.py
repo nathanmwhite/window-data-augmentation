@@ -56,8 +56,8 @@ class TorchDataset(Dataset):
         decoder_data = self._decoder_data[idx]
         
         # assumes <end> is embedded in sequence
-        decoder_input = decoder_data[:, :-1] 
-        decoder_output = decoder_data[:, 1:]
+        decoder_input = decoder_data[:-1]
+        decoder_output = decoder_data[1:]
         
         return encoder_input, decoder_input, decoder_output
 
