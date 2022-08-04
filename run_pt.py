@@ -31,7 +31,7 @@ from .util import wer
 # train_epoch is from Text Summarization Number Probing repo
 #  check to make sure this approach also handles <end> as would be expected
 #  also handles the fact that the data has a decoder input and output throughout
-def train_epoch(idx, training_data_loader, model, loss_function, optimizer, clip_norm):
+def train_epoch(idx, training_data_loader, num_classes, model, loss_function, optimizer, clip_norm):
     batch_loss = 0.0
     continuing_loss = 0.0
     total_loss = 0.0
@@ -282,7 +282,7 @@ if __name__ == '__main__':
         (batch_loss, 
          continuing_loss,
          total_loss, 
-         acc) = train_epoch(epoch, train_dataloader, model, loss_function, optimizer, args.clip_norm)
+         acc) = train_epoch(epoch, train_dataloader, vocab_size, model, loss_function, optimizer, args.clip_norm)
         
         if args.early_stopping:
             early_stopping(total_loss)
