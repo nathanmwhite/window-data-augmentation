@@ -55,10 +55,8 @@ def create_look_ahead_mask(size):
     return mask  # (seq_len, seq_len)
 # end code from Tensorflow tutorial website
 
-# TODO: implement Transformer model and training support
 
 
-# TODO: implement
 def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len, *args, **kwargs):
     # note: torch.nn.Transformer allows multiple layers internally, but it has no clf head
     # it also has no imput embedding layer or position encodings
