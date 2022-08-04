@@ -160,7 +160,7 @@ def encode_sequences(data, total_vocab):
     return sequences
 
 
-def generate_windowed_input_output(data, use_char=True):
+def generate_windowed_input_output(data, vocab_path, use_char=True):
     data_out = {}
     for type in TYPES:
         input_, output_ = join_sents(data[type])
@@ -172,7 +172,7 @@ def generate_windowed_input_output(data, use_char=True):
         tokens = (input_tokens, output_tokens)
         data_out[type] = tokens
         
-    vocab, inverse_vocab, vocab_sequences = get_vocabulary(data_out['base'], data_out['test'])
+    vocab, inverse_vocab, vocab_sequences = get_vocabulary(data_out['base'], data_out['test'], path=vocab_path)
     
     sequences = encode_sequences(data_out, vocab)
     
@@ -253,7 +253,7 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
     """
     data = get_windowed_data(data_path)
 
-    padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data)
+    padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data, vocab_path)
 
     encoder_data = np.concatenate(tuple(padded_sequences[type][0] for type in types))
     decoder_data = np.concatenate(tuple(padded_sequences[type][1] for type in types))
