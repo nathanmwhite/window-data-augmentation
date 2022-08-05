@@ -256,8 +256,14 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
 
     padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data, vocab_path)
 
+    # testing purposes only
     for type in types[:-1]:
         print(padded_sequences[type][0][:5])
+        
+    import time
+    
+    time.sleep(30)
+    # end test
         
     encoder_data = np.concatenate(tuple(padded_sequences[type][0] for type in types[:-1]))
     decoder_data = np.concatenate(tuple(padded_sequences[type][1] for type in types[:-1]))
