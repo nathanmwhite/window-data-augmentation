@@ -48,6 +48,8 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
         
         predictions = model(inputs, decoder_in)
         
+        print(predictions.shape)
+        
         loss = loss_function(predictions, decoder_out)
         
         loss.backward()
