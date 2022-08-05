@@ -297,7 +297,7 @@ if __name__ == '__main__':
                 logging.info(message)
                 break
 
-    am.eval()
+    model.eval()
     with torch.no_grad():
         results = evaluate(model, loss_function, test_dataloader, total_vocab, decoder_seq_len)
         
