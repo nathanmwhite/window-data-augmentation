@@ -50,7 +50,8 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
         
         print(predictions.shape)
         
-        loss = loss_function(predictions, decoder_out)
+        # swapaxes as loss_function requires class dimension to be 1
+        loss = loss_function(torch.swapaxes(predictions, 1, 2), decoder_out)
         
         loss.backward()
         
