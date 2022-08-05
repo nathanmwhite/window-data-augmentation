@@ -239,12 +239,12 @@ def create_final_dataset(in_padded,
     return dataset
 
 
-def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
+def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt'):
     """
     load_dataset : Loads the dataset according to the specified tensor type.
     @param data_path (str) : the path to the dataset to load
     @param vocab_path (str) : the path to the saved vocabulary
-    @param types (List[str]) : a list containing the data windows to return
+    @param window_types (List[str]) : a list containing the data windows to return
     @param tensors (str) : whether to return tensors as PyTorch (pt) or TensorFlow (tf)
     returns: 1. the training dataset of the specified tensor type
              2. the test dataset of the specified tensor type
@@ -255,18 +255,9 @@ def load_dataset(data_path, vocab_path, types=['base'], tensors='pt'):
     data = get_windowed_data(data_path)
 
     padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data, vocab_path)
-
-    # testing purposes only
-    for type in types[:-1]:
-        print(padded_sequences[type][0][:5])
         
-    import time
-    
-    time.sleep(30)
-    # end test
-        
-    encoder_data = np.concatenate(tuple(padded_sequences[type][0] for type in types[:-1]))
-    decoder_data = np.concatenate(tuple(padded_sequences[type][1] for type in types[:-1]))
+    encoder_data = np.concatenate(tuple(padded_sequences[type][0] for type in window_types))
+    decoder_data = np.concatenate(tuple(padded_sequences[type][1] for type in window_types))
     
     train_dataset = create_final_dataset(encoder_data, decoder_data)
     test_dataset = create_final_dataset(*padded_sequences['test'])
