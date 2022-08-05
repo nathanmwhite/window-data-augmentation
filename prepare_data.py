@@ -260,6 +260,7 @@ def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt'):
     decoder_data = np.concatenate(tuple(padded_sequences[type][1] for type in window_types))
     
     train_dataset = create_final_dataset(encoder_data, decoder_data)
+    print(train_dataset[0][2].shape)
     test_dataset = create_final_dataset(*padded_sequences['test'])
         
     return train_dataset, test_dataset, vocab, in_len, out_len
