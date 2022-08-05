@@ -52,8 +52,7 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
         
         loss.backward()
         
-        # TODO: the following line is obsolete; replace with current version
-        label_int_tensor = torch.argmax(decoder_out, axis=-1)
+        label_int_tensor = decoder_out
         
         labels_cpu = label_int_tensor.to("cpu")
         outputs_cpu = predictions.to("cpu")
