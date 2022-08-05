@@ -46,8 +46,13 @@ TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 # Batching is handled in PyTorch by the DataLoader, which is implemented in run_pt.py
 class TorchDataset(Dataset):
     def __init__(self, encoder_data, decoder_data):
-        self._encoder_data = np.asarray(encoder_data, dtype=np.int64)
-        self._decoder_data = np.asarray(decoder_data, dtype=np.int64)
+        encoder_data_ = torch.LongTensor(encoder_data)
+        decoder_data_ = torch.LongTensor(decoder_data)
+        
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+        self._encoder_data = encoder_data_.to(device)
+        self._decoder_data = decoder_data_.to(device)
         
     def __len__(self):
         return len(self._encoder_data)
