@@ -49,7 +49,7 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
         
         predictions = model(inputs, decoder_in)
         
-        print(predictions.shape)
+        #print(predictions.shape)
         
         # swapaxes as loss_function and torchmetrics require
         #  class dimension to be dim 1
@@ -220,6 +220,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=3e-04)
     parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--clip_norm', type=float, default=5.0)
+    parser.add_argument('--early_stopping', type=bool, default=False)
     parser.add_argument('--LA', type=bool, default=False)
     parser.add_argument('--RA', type=bool, default=False)
     parser.add_argument('--S3', type=bool, default=False)
