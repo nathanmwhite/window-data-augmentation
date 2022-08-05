@@ -265,6 +265,7 @@ def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt'):
 
     out_len -= 1 # handles decoder in/out slicing in creating dataset
     print(out_len)
+    print(len(vocab))
     
     return train_dataset, test_dataset, vocab, in_len, out_len
     
