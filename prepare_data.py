@@ -131,11 +131,11 @@ def get_vocabulary(base_data, test_data, path='ywl_vocab.csv', use_char=True):
     encoder_charset = set([c for line in base_data[0]+test_data[0] for c in line])
     vocab_letters = list(set([c for line in vocab for c in line]))
     #vocab_letters = vocab
-    decoder_charset = list(set([c for line in base_data[1]+test_data[1] for c in line if c != '¤'])) + vocab_letters
+    decoder_charset = list(set([c for line in base_data[1]+test_data[1] for c in line if c not in ['¤', 'µ']])) + vocab_letters
 
     complete_set = encoder_charset.union(decoder_charset)
 
-    complete_set = ['<pad>', '<start>', '<end>', '<unk>'] + list(complete_set)
+    complete_set = ['<pad>', '<start>', '<end>', '<unk>', '<name>'] + list(complete_set)
 
     total_vocab = {k: i for (i, k) in enumerate(complete_set)}
 
@@ -151,11 +151,21 @@ def encode(encoder_line, decoder_line, total_vocab):
     start_token = total_vocab['<start>']
     end_token = total_vocab['<end>']
     unk_token = total_vocab['<unk>']
+    name_token = total_vocab['<name>']
     encoded_in = [start_token] + [total_vocab[w] for w in encoder_line] \
                   + [end_token]
 
-    encoded_out = [start_token] + [total_vocab[w] if w != '¤' else unk_token for w in decoder_line] \
-                   + [end_token]
+#     encoded_out = [start_token] + [total_vocab[w] if w != '¤' else unk_token for w in decoder_line] \
+#                    + [end_token]
+    encoded_out = [start_token]
+    for w in decoder_line:
+        if w == '¤':
+            encoded_out.append(unk_token)
+        elif w == 'µ':
+            encoded_out.append(name_token)
+        else:
+            encoded_out.append(total_vocab[w])
+    encoded_out.append(end_token)
 
     return encoded_in, encoded_out
 
