@@ -198,11 +198,10 @@ def generate_windowed_input_output(data, vocab_path, use_char=True):
 def get_seq_lengths(data):
     input_len = max([len(line) for line in data['base'][0]] + \
                     [len(line) for line in data['test'][0]])
-    # -1 to handle offset between decoder input and output
+    # should not have -1 to handle offset between decoder input and output
+    #  as padding is to shared length, and then sliced inside the dataset
     output_len = max([len(line) for line in data['base'][1]] + \
-                     [len(line) for line in data['test'][1]]) - 1
-    print(max([len(line) for line in data['base'][1]]))
-    print(max([len(line) for line in data['test'][1]]))
+                     [len(line) for line in data['test'][1]])
     return input_len, output_len
 
     
