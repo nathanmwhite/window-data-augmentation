@@ -231,6 +231,8 @@ if __name__ == '__main__':
     parser.add_argument('--S13', type=bool, default=False)
     args = parser.parse_args()
     
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
 # load data and vocab: train_dataset and test_dataset, get encoder and decoder size
 # TODO: ensure train_dataset gives access to sequence correctly
     data_types = ['base']
@@ -269,6 +271,8 @@ if __name__ == '__main__':
     
     # instantiate model
     model = construct_transformer_model(vocab_size, args.d_model, encoder_seq_len, decoder_seq_len)
+    
+    model.to(device)
     
     model.train()
     
