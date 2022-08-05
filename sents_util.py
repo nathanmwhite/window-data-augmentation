@@ -93,5 +93,9 @@ def join_sents(sent_list):
     input_ = re.sub('% ', '', input_)
     input_ = re.sub('%', '', input_)
     input_sents.append(input_)
-    output_sents.append(' '.join(output_sent))
+    output_sent = ' '.join(output_sent)
+    # handle [unknown] and [name]
+    output_sent = re.sub('\[unknown\]', '¤', output_sent)
+    output_sent = re.sub('\[name\]', 'µ', output_sent)
+    output_sents.append(output_sent)
   return input_sents, output_sents
