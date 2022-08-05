@@ -50,15 +50,18 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
         
         print(predictions.shape)
         
-        # swapaxes as loss_function requires class dimension to be 1
-        loss = loss_function(torch.swapaxes(predictions, 1, 2), decoder_out)
+        # swapaxes as loss_function and torchmetrics require
+        #  class dimension to be dim 1
+        predictions_axes = torch.swapaxes(predictions, 1, 2)
+        
+        loss = loss_function(predictions_axes, decoder_out)
         
         loss.backward()
         
         label_int_tensor = decoder_out
         
         labels_cpu = label_int_tensor.to("cpu")
-        outputs_cpu = predictions.to("cpu")
+        outputs_cpu = predictions_axes.to("cpu")
         
         batch_accuracy = accuracy(outputs_cpu, labels_cpu)
         
