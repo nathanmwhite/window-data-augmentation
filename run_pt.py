@@ -187,7 +187,7 @@ class Early_Stopping:
 
 
 # Ported from Tensorflow tutorial code; adapted for PyTorch
-def masked_loss_function(real, pred):
+def masked_loss_function(pred, real):
     loss = torch.nn.CrossEntropyLoss(reduction='none')
     
     mask = torch.logical_not(torch.eq(real, 0))
