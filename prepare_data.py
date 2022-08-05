@@ -22,6 +22,8 @@ import pandas as pd
 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+import torch
+
 from torch.utils.data import Dataset
 
 from .sents_util import join_sents, retrieve_sents
