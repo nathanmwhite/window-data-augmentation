@@ -285,10 +285,15 @@ if __name__ == '__main__':
     # training accuracy here considers all positions, including masked positions
     # this ensures that randomly generated elements inside padding penalize
     #  the accuracy metric
-    for epoch in range(args.epochs):
+    for epoch in range(args.epochs):        
         (batch_loss, 
          continuing_loss,
          total_loss) = train_epoch(epoch, train_dataloader, vocab_size, model, loss_function, optimizer, args.clip_norm)
+        
+        if epoch % 10 == 0:
+            message = f'Epoch {epoch} loss: {total_loss}'
+            logging.info(message)
+            print(message)
         
         if args.early_stopping:
             early_stopping(total_loss)
