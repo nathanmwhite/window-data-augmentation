@@ -256,7 +256,6 @@ def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt'):
     data = get_windowed_data(data_path)
 
     padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data, vocab_path)
-    print(out_len)
         
     encoder_data = np.concatenate(tuple(padded_sequences[type][0] for type in window_types))
     decoder_data = np.concatenate(tuple(padded_sequences[type][1] for type in window_types))
