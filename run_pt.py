@@ -36,7 +36,7 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
     continuing_loss = 0.0
     total_loss = 0.0
     
-    accuracy = Accuracy(num_classes=num_classes, mdmc_reduce=None)
+#     accuracy = Accuracy(num_classes=num_classes, mdmc_reduce="global")
     
     for i, data_batch in enumerate(training_data_loader):
         inputs, decoder_in, decoder_out = data_batch
@@ -60,10 +60,10 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
         
         label_int_tensor = decoder_out
         
-        labels_cpu = label_int_tensor.to("cpu")
-        outputs_cpu = predictions_axes.to("cpu")
+#         labels_cpu = label_int_tensor.to("cpu")
+#         outputs_cpu = predictions_axes.to("cpu")
         
-        batch_accuracy = accuracy(outputs_cpu, labels_cpu)
+#         batch_accuracy = accuracy(outputs_cpu, labels_cpu)
         
         clip_grad_norm_(filter(lambda x: x.requires_grad, model.parameters()), clip_norm)
                 
@@ -80,7 +80,7 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
             logging.info(loss_message)
             continuing_loss = 0.0
             
-    return batch_loss, continuing_loss, total_loss, accuracy.compute()
+    return batch_loss, continuing_loss, total_loss #, accuracy.compute()
 
 
 # Ported from Google Colaboratory-based code and converted to PyTorch
@@ -286,8 +286,7 @@ if __name__ == '__main__':
     for epoch in range(args.epochs):
         (batch_loss, 
          continuing_loss,
-         total_loss, 
-         acc) = train_epoch(epoch, train_dataloader, vocab_size, model, loss_function, optimizer, args.clip_norm)
+         total_loss) = train_epoch(epoch, train_dataloader, vocab_size, model, loss_function, optimizer, args.clip_norm)
         
         if args.early_stopping:
             early_stopping(total_loss)
