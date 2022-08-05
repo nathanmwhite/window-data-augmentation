@@ -36,7 +36,7 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
     continuing_loss = 0.0
     total_loss = 0.0
     
-    accuracy = Accuracy(num_classes=num_classes)
+    accuracy = Accuracy(num_classes=num_classes, mdmc_reduce=None)
     
     for i, data_batch in enumerate(training_data_loader):
         inputs, decoder_in, decoder_out = data_batch
@@ -194,7 +194,7 @@ class Early_Stopping:
 
 # Ported from Tensorflow tutorial code; adapted for PyTorch
 def masked_loss_function(pred, real):
-    loss = torch.nn.CrossEntropyLoss(reduction='none', mdmc_reduce=None)
+    loss = torch.nn.CrossEntropyLoss(reduction='none')
     
     mask = torch.logical_not(torch.eq(real, 0))
     loss_result = loss(pred, real)
