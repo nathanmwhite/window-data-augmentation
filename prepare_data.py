@@ -201,7 +201,8 @@ def get_seq_lengths(data):
     # -1 to handle offset between decoder input and output
     output_len = max([len(line) for line in data['base'][1]] + \
                      [len(line) for line in data['test'][1]]) - 1
-    print(input_len, output_len)
+    print(max([len(line) for line in data['base'][1]]))
+    print(max([len(line) for line in data['test'][1]]))
     return input_len, output_len
 
     
