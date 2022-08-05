@@ -196,15 +196,12 @@ def generate_windowed_input_output(data, vocab_path, use_char=True):
 
 # Note: this is intended to produce seq lengths post-encode
 def get_seq_lengths(data):
-    print(len(data['base'][0]))
-    print(len(data['test'][0]))
-    print(len(data['base'][1]))
-    print(len(data['test'][1]))
     input_len = max([len(line) for line in data['base'][0]] + \
                     [len(line) for line in data['test'][0]])
     # -1 to handle offset between decoder input and output
     output_len = max([len(line) for line in data['base'][1]] + \
                      [len(line) for line in data['test'][1]]) - 1
+    print(input_len, output_len)
     return input_len, output_len
 
     
