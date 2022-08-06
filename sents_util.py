@@ -10,6 +10,10 @@ __author_email__ = "nathan.white1@jcu.edu.au"
 
 import re
 
+CHAR_SYMBOLS = {'[unknown]': '¤',
+                '[name]': 'µ',
+                '[interj]': 'º'}
+
 
 def retrieve_sents(data_stream, 
                    left_slide=False, 
@@ -95,7 +99,8 @@ def join_sents(sent_list):
     input_sents.append(input_)
     output_sent = ' '.join(output_sent)
     # handle [unknown] and [name]
-    output_sent = re.sub('\[unknown\]', '¤', output_sent)
-    output_sent = re.sub('\[name\]', 'µ', output_sent)
+    output_sent = re.sub('\[unknown\]', CHAR_SYMBOLS['[unknown]'], output_sent)
+    output_sent = re.sub('\[name\]', CHAR_SYMBOLS['[name]'], output_sent)
+    output_sent = re.sub('\[interj\]', CHAR_SYMBOLS['[interj]'], output_sent)
     output_sents.append(output_sent)
   return input_sents, output_sents
