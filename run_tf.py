@@ -29,6 +29,10 @@ from .model_tf import construct_rnn_attention_model
 from .prepare_data import load_dataset
 from .util import wer
 
+# TODO:
+#  1. Replace evaluate_test portion with relevant code
+#  2. Replace accuracy metric with appropriate measure
+
 
 # From Tensorflow tutorial site
 # def loss_function(real, pred):
@@ -153,8 +157,8 @@ def evaluate_test(model, test_data, total_vocab, output_len):
         scorable_output = None
         for i in range(output_len):
             # TODO: replace with appropriate code
-            enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
-                input_, output)
+#             enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
+#                 input_, output)
             #print(inp)
             predictions, attention_weights = model((input_, decoder_input),
                                                    training=False)
