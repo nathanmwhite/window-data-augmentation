@@ -141,7 +141,7 @@ def evaluate_test(model, test_data, total_vocab, output_len):
     bleu_real = []
     bleu_pred = []
     wer_scores = []
-    for (inp, tar) in test_data:
+    for ((inp, _), tar) in test_data:
         input_ = tf.expand_dims(inp, 0) 
         #print(input_)
 
