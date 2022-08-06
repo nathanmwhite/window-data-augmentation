@@ -21,6 +21,7 @@ import tensorflow as tf
 
 import tensorflow.keras.backend as K
 from tensorflow.python.keras.metrics import MeanMetricWrapper
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from nltk.translate.bleu_score import corpus_bleu
 
@@ -325,7 +326,7 @@ if __name__ == '__main__':
 
     pad_token = total_vocab['<pad>']
     model.compile(optimizer='adam',
-                  loss='categorical_crossentropy',
+                  loss=SparseCategoricalCrossentropy(),
                   metrics=[MaskedCategoricalAccuracy(pad_token)])
 
 # train model
