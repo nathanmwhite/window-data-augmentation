@@ -61,7 +61,7 @@ def construct_rnn_attention_model(vocab_size,
     decoder_embedding = Embedding(vocab_size, hidden_size, name='decoder_embedding')
     decoder_rnn = RNN_(hidden_size,
                         return_sequences=True,
-                        return_states=True,
+                        return_state=True,
                         name='decoder_rnn')
     decoder_attention = Attention(name='attention_layer')
     decoder_attentional_hidden_state = Dense(hidden_size,
