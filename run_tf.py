@@ -253,7 +253,11 @@ if __name__ == '__main__':
      test_dataset,
      total_vocab,
      encoder_seq_len,
-     decoder_seq_len) = load_dataset(args.data_path, args.vocab_path, types=data_types, tensors='tf')
+     decoder_seq_len) = load_dataset(args.data_path, 
+                                     args.vocab_path, 
+                                     window_types=data_types, 
+                                     tensors='tf', 
+                                     batch_size=args.batch_size)
     vocab_size = len(total_vocab)
     
 # instantiate model
