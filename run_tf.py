@@ -19,6 +19,9 @@ import numpy as np
 
 import tensorflow as tf
 
+import tensorflow.keras.backend as K
+from tensorflow.python.keras.metrics import MeanMetricWrapper
+
 from nltk.translate.bleu_score import corpus_bleu
 
 from .model_tf import construct_rnn_attention_model
@@ -35,8 +38,12 @@ from .util import wer
 #     loss_ *= mask
   
 #     return tf.reduce_sum(loss_)/tf.reduce_sum(mask)
- 
- 
+
+   
+# class MaskedAccuracy(MeanMetricWrapper):
+#     def __init__(self, mask, name='masked_accuracy', dtype=None):
+#         super(MaskedAccuracy, self).__init__(accuracy_function, name, dtype=dtype, mask=mask)
+# # original Tf-ported function
 # def accuracy_function(real, pred):
 #     accuracies = tf.equal(real, tf.argmax(pred, axis=2))
   
@@ -47,6 +54,25 @@ from .util import wer
 #     mask = tf.cast(mask, dtype=tf.float32)
 #     return tf.reduce_sum(accuracies)/tf.reduce_sum(mask)
 
+class MaskedCategoricalAccuracy(MeanMetricWrapper):
+
+    def __init__(self, mask_id, name='masked_categorical_accuracy', dtype=None):
+        super(MaskedCategoricalAccuracy, self).__init__(
+            masked_categorical_accuracy, name, dtype=dtype, mask_id=mask_id)
+
+# still need to remove <end>
+def masked_categorical_accuracy(y_true, y_pred, mask_id):
+    true_ids = K.argmax(y_true, axis=-1)
+    pred_ids = K.argmax(y_pred, axis=-1)
+    maskBool = K.not_equal(true_ids, mask_id)
+    maskInt64 = K.cast(maskBool, 'int64')
+    maskFloatX = K.cast(maskBool, K.floatx())
+
+    count = K.sum(maskFloatX)
+    equals = K.equal(true_ids * maskInt64,
+                     pred_ids * maskInt64)
+    sum = K.sum(K.cast(equals, K.floatx()) * maskFloatX)
+    return sum / count
 
 # train_step_signature = [
 #     tf.TensorSpec(shape=(None, None), dtype=tf.int64),
@@ -209,6 +235,7 @@ def evaluate_test(model, test_data, total_vocab, output_len):
 
     return np.mean(np.asarray(accuracies)), test_bleu_function(bleu_real, bleu_pred), np.mean(np.asarray(wer_scores))  
 
+   
 if __name__ == '__main__':
 # TODO: process command-line args
     parser = argparse.ArgumentParser()
@@ -296,12 +323,10 @@ if __name__ == '__main__':
 # early stopping
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=args.patience)
 
-# TODO: change metrics code for this task; replace with appropriate Accuracy type
     pad_token = total_vocab['<pad>']
     model.compile(optimizer='adam',
                   loss='categorical_crossentropy',
-                  metrics=[MaskedCategoricalAccuracy(pad_token),
-                           ExactMatchedAccuracy(pad_token)])
+                  metrics=[MaskedCategoricalAccuracy(pad_token)])
 
 # train model
 # TODO: update input and output parameters
