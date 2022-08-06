@@ -236,7 +236,7 @@ def create_tf_dataset(encoder_data, decoder_data, batch_size):
     dec_input_dataset = tf.data.Dataset.from_tensor_slices(dec_numpy[:, :-1])
     dec_output_dataset = tf.data.Dataset.from_tensor_slices(dec_numpy[:, 1:])
 
-    dataset = tf.data.Dataset.zip((enc_dataset, dec_input_dataset, dec_output_dataset))
+    dataset = tf.data.Dataset.zip(([enc_dataset, dec_input_dataset], dec_output_dataset))
     
     dataset = dataset.cache()
     dataset = dataset.padded_batch(batch_size)
