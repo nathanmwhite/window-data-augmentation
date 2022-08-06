@@ -63,7 +63,8 @@ class MaskedCategoricalAccuracy(MeanMetricWrapper):
 
 # still need to remove <end>
 def masked_categorical_accuracy(y_true, y_pred, mask_id):
-    true_ids = K.argmax(y_true, axis=-1)
+    #true_ids = K.argmax(y_true, axis=-1)
+    true_ids = y_true
     pred_ids = K.argmax(y_pred, axis=-1)
     maskBool = K.not_equal(true_ids, mask_id)
     maskInt64 = K.cast(maskBool, 'int64')
