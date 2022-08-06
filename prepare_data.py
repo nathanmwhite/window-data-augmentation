@@ -20,6 +20,8 @@ import numpy as np
 
 import pandas as pd
 
+import tensorflow as tf
+
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 import torch
@@ -176,23 +178,23 @@ def encode(encoder_line, decoder_line, total_vocab):
 
 def encode_sequences(data, total_vocab):
     sequences = {}
-    for type in TYPES:
-        sequences[type] = tuple(zip(*[encode(a, b, total_vocab) for a, b in zip(data[type][0], data[type][1])]))
+    for type_ in TYPES:
+        sequences[type_] = tuple(zip(*[encode(a, b, total_vocab) for a, b in zip(data[type_][0], data[type_][1])]))
     
     return sequences
 
 
 def generate_windowed_input_output(data, vocab_path, use_char=True):
     data_out = {}
-    for type in TYPES:
-        input_, output_ = join_sents(data[type])
+    for type_ in TYPES:
+        input_, output_ = join_sents(data[type_])
         if use_char == True:
             input_tokens = [[c for c in line] for line in input_]
             output_tokens = [[c for c in line] for line in output_]
         else:
             raise NotImplementedError
         tokens = (input_tokens, output_tokens)
-        data_out[type] = tokens
+        data_out[type_] = tokens
         
     vocab, inverse_vocab, vocab_sequences = get_vocabulary(data_out['base'], data_out['test'], path=vocab_path)
     
@@ -201,16 +203,16 @@ def generate_windowed_input_output(data, vocab_path, use_char=True):
     in_len, out_len = get_seq_lengths(data_out)
     
     padded_sequences = {}
-    for type in TYPES:
-        padded_in = pad_sequences(sequences[type][0],
+    for type_ in TYPES:
+        padded_in = pad_sequences(sequences[type_][0],
                                                   maxlen=in_len,
                                                   padding='post',
                                                   value=vocab['<pad>'])
-        padded_out = pad_sequences(sequences[type][1],
+        padded_out = pad_sequences(sequences[type_][1],
                                                   maxlen=out_len,
                                                   padding='post',
                                                   value=vocab['<pad>'])
-        padded_sequences[type] = (padded_in, padded_out)
+        padded_sequences[type_] = (padded_in, padded_out)
     
     return padded_sequences, vocab, in_len, out_len
 
@@ -278,8 +280,8 @@ def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt'):
 
     padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data, vocab_path)
         
-    encoder_data = np.concatenate(tuple(padded_sequences[type][0] for type in window_types))
-    decoder_data = np.concatenate(tuple(padded_sequences[type][1] for type in window_types))
+    encoder_data = np.concatenate(tuple(padded_sequences[type_][0] for type_ in window_types))
+    decoder_data = np.concatenate(tuple(padded_sequences[type_][1] for type_ in window_types))
     
     train_dataset = create_final_dataset(encoder_data, decoder_data)
     test_dataset = create_final_dataset(*padded_sequences['test'])
