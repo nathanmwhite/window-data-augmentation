@@ -54,7 +54,7 @@ def construct_rnn_attention_model(vocab_size,
 #             encoder_rnn_list.append(encoder_rnn)
     encoder_rnn = RNN_(hidden_size,
                     return_sequences=True,
-                    return_states=True,
+                    return_state=True,
                     name='encoder_rnn')
     
     decoder_input = Input((decoder_seq_len,), name='decoder_input')
