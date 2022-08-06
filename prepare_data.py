@@ -37,9 +37,9 @@ TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 # TODO:
 # Remaining issues:
 # 1. The character-based approach
-#     still does not support certain tags in the data, such as [name].
+#     still does not support certain tags in the data, such as [name].--done
 # 2. The tf dataset format needs to be tested.
-# 3. The new version handling decoder_output must be tested.
+# 3. The new version handling decoder_output must be tested.--done
 # 4. Confirm that the unfinished sequences are adequately handled by both pt and
 #     tf implementations.
 # 5. Confirm that the dimensionality specified for data slices in dataset are correct.
