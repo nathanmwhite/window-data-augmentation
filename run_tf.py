@@ -353,7 +353,7 @@ if __name__ == '__main__':
 
        # print ('Time taken for 1 epoch: {} secs\n'.format(time.time() - start))
   
-    results = evaluate_test(test_dataset)
+    results = evaluate_test(model, test_dataset, total_vocab, decoder_seq_len)
         
     hyperparam_set = ('rnn_test',
                       args.rnn_type,
