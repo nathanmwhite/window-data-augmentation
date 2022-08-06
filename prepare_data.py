@@ -36,15 +36,15 @@ TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 # This code has been tested and works as of 30 July 2022.
 # Testing with real data shows that it produces outputs that
 #  look and behave exactly as expected.
-# TODO:
+# TODO: done
 # Remaining issues:
 # 1. The character-based approach
 #     still does not support certain tags in the data, such as [name].--done
 # 2. The tf dataset format needs to be tested.--done
 # 3. The new version handling decoder_output must be tested.--done
 # 4. Confirm that the unfinished sequences are adequately handled by both pt and
-#     tf implementations.
-# 5. Confirm that the dimensionality specified for data slices in dataset are correct.
+#     tf implementations.--done
+# 5. Confirm that the dimensionality specified for data slices in dataset are correct.--done
 
 
 # Batching is handled in PyTorch by the DataLoader, which is implemented in run_pt.py
