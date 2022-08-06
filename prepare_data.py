@@ -26,7 +26,7 @@ import torch
 
 from torch.utils.data import Dataset
 
-from .sents_util import join_sents, retrieve_sents
+from .sents_util import join_sents, retrieve_sents, CHAR_SYMBOLS
 
 TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 
@@ -131,11 +131,12 @@ def get_vocabulary(base_data, test_data, path='ywl_vocab.csv', use_char=True):
     encoder_charset = set([c for line in base_data[0]+test_data[0] for c in line])
     vocab_letters = list(set([c for line in vocab for c in line]))
     #vocab_letters = vocab
-    decoder_charset = list(set([c for line in base_data[1]+test_data[1] for c in line if c not in ['¤', 'µ']])) + vocab_letters
+    special_tokens = CHAR_SYMBOLS.values()
+    decoder_charset = list(set([c for line in base_data[1]+test_data[1] for c in line if c not in special_tokens])) + vocab_letters
 
     complete_set = encoder_charset.union(decoder_charset)
 
-    complete_set = ['<pad>', '<start>', '<end>', '<unk>', '<name>'] + list(complete_set)
+    complete_set = ['<pad>', '<start>', '<end>', '<unk>', '<name>', '<interj>'] + list(complete_set)
 
     total_vocab = {k: i for (i, k) in enumerate(complete_set)}
 
@@ -152,6 +153,7 @@ def encode(encoder_line, decoder_line, total_vocab):
     end_token = total_vocab['<end>']
     unk_token = total_vocab['<unk>']
     name_token = total_vocab['<name>']
+    interj_token = total_vocab['<interj>']
     encoded_in = [start_token] + [total_vocab[w] for w in encoder_line] \
                   + [end_token]
 
@@ -159,10 +161,12 @@ def encode(encoder_line, decoder_line, total_vocab):
 #                    + [end_token]
     encoded_out = [start_token]
     for w in decoder_line:
-        if w == '¤':
+        if w == CHAR_SYMBOLS['[unknown]']:
             encoded_out.append(unk_token)
-        elif w == 'µ':
+        elif w == CHAR_SYMBOLS['[name]']:
             encoded_out.append(name_token)
+        elif w == CHAR_SYMBOLS['[interj]']:
+            encoded_out.append(interj_token)
         else:
             encoded_out.append(total_vocab[w])
     encoded_out.append(end_token)
