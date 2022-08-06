@@ -40,7 +40,7 @@ TYPES = ['base', 'LA', 'RA', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'test']
 # Remaining issues:
 # 1. The character-based approach
 #     still does not support certain tags in the data, such as [name].--done
-# 2. The tf dataset format needs to be tested.
+# 2. The tf dataset format needs to be tested.--done
 # 3. The new version handling decoder_output must be tested.--done
 # 4. Confirm that the unfinished sequences are adequately handled by both pt and
 #     tf implementations.
@@ -228,7 +228,7 @@ def get_seq_lengths(data):
     return input_len, output_len
 
     
-def create_tf_dataset(encoder_data, decoder_data):
+def create_tf_dataset(encoder_data, decoder_data, batch_size):
     enc_numpy = np.asarray(encoder_data, dtype=np.int64)
     enc_dataset = tf.data.Dataset.from_tensor_slices(enc_numpy)
 
@@ -237,9 +237,9 @@ def create_tf_dataset(encoder_data, decoder_data):
     dec_output_dataset = tf.data.Dataset.from_tensor_slices(dec_numpy[:, 1:])
 
     dataset = tf.data.Dataset.zip((enc_dataset, dec_input_dataset, dec_output_dataset))
-
+    
     dataset = dataset.cache()
-    dataset = dataset.padded_batch(BATCH_SIZE)
+    dataset = dataset.padded_batch(batch_size)
     dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
 
     return dataset
@@ -251,10 +251,13 @@ def create_pt_dataset(encoder_data, decoder_data):
 
 def create_final_dataset(in_padded,
                          out_padded,
-                         tensors='pt'):
+                         tensors='pt',
+                         batch_size=None):
     
     if tensors == 'tf':
-        dataset = create_tf_dataset(in_padded, out_padded)
+        if (batch_size == None) or (type(batch_size) != int) or (batch_size <= 0):
+            raise ValueError('Parameter batch_size must be defined for TensorFlow datasets.')
+        dataset = create_tf_dataset(in_padded, out_padded, batch_size)
     elif tensors == 'pt':
         dataset = create_pt_dataset(in_padded, out_padded)
     else:
@@ -263,13 +266,14 @@ def create_final_dataset(in_padded,
     return dataset
 
 
-def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt'):
+def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt', batch_size=None):
     """
     load_dataset : Loads the dataset according to the specified tensor type.
     @param data_path (str) : the path to the dataset to load
     @param vocab_path (str) : the path to the saved vocabulary
     @param window_types (List[str]) : a list containing the data windows to return
     @param tensors (str) : whether to return tensors as PyTorch (pt) or TensorFlow (tf)
+    @param batch_size (int) : indicates the batch size to use in the dataset (TensorFlow only)
     returns: 1. the training dataset of the specified tensor type
              2. the test dataset of the specified tensor type
              3. the vocabulary as a dictionary
@@ -283,8 +287,8 @@ def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt'):
     encoder_data = np.concatenate(tuple(padded_sequences[type_][0] for type_ in window_types))
     decoder_data = np.concatenate(tuple(padded_sequences[type_][1] for type_ in window_types))
     
-    train_dataset = create_final_dataset(encoder_data, decoder_data)
-    test_dataset = create_final_dataset(*padded_sequences['test'])
+    train_dataset = create_final_dataset(encoder_data, decoder_data, tensors=tensors, batch_size=batch_size)
+    test_dataset = create_final_dataset(*padded_sequences['test'], tensors=tensors, batch_size=batch_size)
 
     out_len -= 1 # handles decoder in/out slicing in creating dataset
     #print(out_len)
