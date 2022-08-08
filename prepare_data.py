@@ -228,7 +228,7 @@ def get_seq_lengths(data):
     return input_len, output_len
 
     
-def create_tf_dataset(encoder_data, decoder_data, batch_size):
+def create_tf_dataset(encoder_data, decoder_data, batch_size, test_set=False):
     enc_numpy = np.asarray(encoder_data, dtype=np.int64)
     enc_dataset = tf.data.Dataset.from_tensor_slices(enc_numpy)
 
@@ -239,10 +239,10 @@ def create_tf_dataset(encoder_data, decoder_data, batch_size):
     dataset_input = (enc_dataset, dec_input_dataset)
 
     dataset = tf.data.Dataset.zip((dataset_input, dec_output_dataset))
-    
-    dataset = dataset.cache()
-    dataset = dataset.padded_batch(batch_size)
-    dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
+    if test_set == False:
+        dataset = dataset.cache()
+        dataset = dataset.padded_batch(batch_size)
+        dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
 
     return dataset
 
@@ -254,12 +254,13 @@ def create_pt_dataset(encoder_data, decoder_data):
 def create_final_dataset(in_padded,
                          out_padded,
                          tensors='pt',
-                         batch_size=None):
+                         batch_size=None,
+                         test_set=False):
     
     if tensors == 'tf':
         if (batch_size == None) or (type(batch_size) != int) or (batch_size <= 0):
             raise ValueError('Parameter batch_size must be defined for TensorFlow datasets.')
-        dataset = create_tf_dataset(in_padded, out_padded, batch_size)
+        dataset = create_tf_dataset(in_padded, out_padded, batch_size, test_set=test_set)
     elif tensors == 'pt':
         dataset = create_pt_dataset(in_padded, out_padded)
     else:
@@ -290,7 +291,7 @@ def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt', bat
     decoder_data = np.concatenate(tuple(padded_sequences[type_][1] for type_ in window_types))
     
     train_dataset = create_final_dataset(encoder_data, decoder_data, tensors=tensors, batch_size=batch_size)
-    test_dataset = create_final_dataset(*padded_sequences['test'], tensors=tensors, batch_size=batch_size)
+    test_dataset = create_final_dataset(*padded_sequences['test'], tensors=tensors, batch_size=batch_size, test_set=True)
 
     out_len -= 1 # handles decoder in/out slicing in creating dataset
     #print(out_len)
