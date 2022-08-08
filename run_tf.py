@@ -168,11 +168,11 @@ def evaluate_test(model, test_data, total_vocab, output_len):
                                 training=False)
             # end TODO
             
-            #print(type(predictions))
+            print(type(predictions))
             predictions = predictions[:, -1:, :]
 
             predicted_id = tf.argmax(predictions, axis=-1)
-            #print(predicted_id)
+            print(predicted_id)
 
             output = tf.concat([decoder_tensor, predicted_id], axis=-1)
 
@@ -365,7 +365,6 @@ if __name__ == '__main__':
         
     hyperparam_set = ('rnn_test',
                       args.rnn_type,
-                      args.d_model,
                       args.batch_size,
                       args.lr,
                       args.epochs)
