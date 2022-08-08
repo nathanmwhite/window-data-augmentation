@@ -162,8 +162,8 @@ def evaluate_test(model, test_data, total_vocab, output_len):
             #print(inp)
             print(input_)
             print(decoder_tensor)
-            predictions, attention_weights = model((input_, decoder_tensor),
-                                                   training=False)
+            predictions = model((input_, decoder_tensor),
+                                training=False)
             # end TODO
             
             #print(type(predictions))
