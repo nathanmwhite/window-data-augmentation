@@ -22,6 +22,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.python.keras.metrics import MeanMetricWrapper
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
+from tensorflow.keras.optimizers import Adam
 
 from nltk.translate.bleu_score import corpus_bleu
 
@@ -260,6 +261,7 @@ if __name__ == '__main__':
     parser.add_argument('--rnn_type', type=str, default='LSTM')
     parser.add_argument('--hidden_size', type=int, default=64)
     parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--lr', type=float, default=3e-04)
     parser.add_argument('--epochs', type=int, default=500)
     parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--LA', type=bool, default=False)
@@ -340,7 +342,7 @@ if __name__ == '__main__':
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=args.patience)
 
     pad_token = total_vocab['<pad>']
-    model.compile(optimizer='adam',
+    model.compile(optimizer=Adam(lr=args.lr),
                   loss=SparseCategoricalCrossentropy(),
                   metrics=[MaskedCategoricalAccuracy(pad_token)])
 
