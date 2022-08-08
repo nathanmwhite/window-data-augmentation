@@ -160,8 +160,8 @@ def evaluate_test(model, test_data, total_vocab, output_len):
 #             enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
 #                 input_, output)
             #print(inp)
-            print(inp.shape)
-            print(decoder_input.shape)
+            print(input_)
+            print(decoder_input)
             predictions, attention_weights = model((input_, decoder_input),
                                                    training=False)
             # end TODO
