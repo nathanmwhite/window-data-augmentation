@@ -226,8 +226,8 @@ def evaluate_test(model, test_data, total_vocab, output_len):
 #         pred_scorable = np.array([c for line in pred_best_levenshtein for c in line + [total_vocab[' ']]][:-1])
 #  # to here
 
-        logging.info("Actual: {}".format(''.join(inv_total_vocab[i] for i in target_scorable)))
-        logging.info("Predicted: {}".format(''.join(inv_total_vocab[i] for i in pred_scorable)))
+#         logging.info("Actual: {}".format(''.join(inv_total_vocab[i] for i in target_scorable)))
+#         logging.info("Predicted: {}".format(''.join(inv_total_vocab[i] for i in pred_scorable)))
 
         bleu_real.append([target_scorable.tolist()])
         bleu_pred.append(pred_scorable.tolist())
