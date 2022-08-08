@@ -150,7 +150,7 @@ def evaluate_test(model, test_data, total_vocab, output_len):
         #print(input_)
 
         decoder_input = [total_vocab['<start>']]
-        output = tf.cast(tf.expand_dims(decoder_input, 0), tf.int64)
+        decoder_tensor = tf.cast(tf.expand_dims(decoder_input, 0), tf.int64)
         #print(output)
         #print(type(output))
 
@@ -161,8 +161,8 @@ def evaluate_test(model, test_data, total_vocab, output_len):
 #                 input_, output)
             #print(inp)
             print(input_)
-            print(decoder_input)
-            predictions, attention_weights = model((input_, decoder_input),
+            print(decoder_tensor)
+            predictions, attention_weights = model((input_, decoder_tensor),
                                                    training=False)
             # end TODO
             
@@ -172,7 +172,7 @@ def evaluate_test(model, test_data, total_vocab, output_len):
             predicted_id = tf.argmax(predictions, axis=-1)
             #print(predicted_id)
 
-            output = tf.concat([output, predicted_id], axis=-1)
+            output = tf.concat([decoder_tensor, predicted_id], axis=-1)
 
             if predicted_id == total_vocab['<end>']:
               break
