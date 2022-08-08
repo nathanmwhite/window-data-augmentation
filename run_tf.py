@@ -174,7 +174,7 @@ def evaluate_test(model, test_data, total_vocab, output_len):
             predicted_id = tf.argmax(predictions, axis=-1)
             print(predicted_id)
 
-            output = tf.concat([decoder_tensor, predicted_id], axis=-1)
+            decoder_tensor = tf.concat([decoder_tensor, predicted_id], axis=-1)
 
             if predicted_id == total_vocab['<end>']:
               break
