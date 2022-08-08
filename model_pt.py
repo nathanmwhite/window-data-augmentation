@@ -77,8 +77,8 @@ def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len, *
             self.decoder_embedding_layer = Embedding(num_embeddings=self.vocab_size,
                                                      embedding_dim=self.d_model,
                                                      padding_idx=0)
-            self.encoder_pos_encoding = positional_encoding(self.encoder_len, self.d_model)
-            self.decoder_pos_encoding = positional_encoding(self.decoder_len, self.d_model)
+            self.encoder_pos_encoding = positional_encoding(self.encoder_len, self.d_model).to(device)
+            self.decoder_pos_encoding = positional_encoding(self.decoder_len, self.d_model).to(device)
             self.final_layer = Linear(self.d_model, self.vocab_size)
             self.softmax = Softmax(dim=-1)
             
