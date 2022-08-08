@@ -188,8 +188,8 @@ def evaluate_test(model, test_data, total_vocab, output_len):
         #print(output)
         scorable_output = tf.squeeze(decoder_tensor, axis=0)
         #scorable_output = decoder_tensor
-        logging.info("Actual: {}".format(' '.join(inv_total_vocab[i] for i in tar.numpy())))
-        logging.info("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
+#         logging.info("Actual: {}".format(' '.join(inv_total_vocab[i] for i in tar.numpy())))
+#         logging.info("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
 
         pad_value = total_vocab['<pad>']
         start_value = total_vocab['<start>']
@@ -226,8 +226,8 @@ def evaluate_test(model, test_data, total_vocab, output_len):
 #         pred_scorable = np.array([c for line in pred_best_levenshtein for c in line + [total_vocab[' ']]][:-1])
 #  # to here
 
-        logging.info("Actual: {}".format(' '.join(inv_total_vocab[i] for i in target_scorable)))
-        logging.info("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in pred_scorable)))
+        logging.info("Actual: {}".format(''.join(inv_total_vocab[i] for i in target_scorable)))
+        logging.info("Predicted: {}".format(''.join(inv_total_vocab[i] for i in pred_scorable)))
 
         bleu_real.append([target_scorable.tolist()])
         bleu_pred.append(pred_scorable.tolist())
@@ -375,6 +375,7 @@ if __name__ == '__main__':
                       args.rnn_type,
                       args.batch_size,
                       args.hidden_size,
+                      args.lr,
                       args.epochs,
                       args.patience)
     message = f"Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
