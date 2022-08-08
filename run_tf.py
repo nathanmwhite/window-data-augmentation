@@ -185,8 +185,8 @@ def evaluate_test(model, test_data, total_vocab, output_len):
               break
 
         #print(output)
-        #scorable_output = tf.squeeze(decoder_tensor, axis=0)
-        scorable_output = decoder_tensor
+        scorable_output = tf.squeeze(decoder_tensor, axis=0)
+        #scorable_output = decoder_tensor
         logging.info("Actual: {}".format(' '.join(inv_total_vocab[i] for i in tar.numpy())))
         logging.info("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
 
