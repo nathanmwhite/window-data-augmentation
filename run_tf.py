@@ -164,7 +164,7 @@ def evaluate_test(model, test_data, total_vocab, output_len):
             #print(inp)
 #             print(input_)
 #             print(decoder_tensor)
-            decoder_padded = tf.keras.utils.pad_sequences(
+            decoder_padded = tf.keras.preprocessing.sequence.pad_sequences(
                                  decoder_tensor, padding="post", maxlen=output_len
                                  )
 
