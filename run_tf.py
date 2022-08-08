@@ -173,11 +173,11 @@ def evaluate_test(model, test_data, total_vocab, output_len):
                                 training=False)
             # end TODO
             
-            print(type(predictions))
+            #print(type(predictions))
             predictions = predictions[:, i:i+1, :]
 
             predicted_id = tf.argmax(predictions, axis=-1)
-            print(predicted_id)
+            #print(predicted_id)
 
             decoder_tensor = tf.concat([decoder_tensor, predicted_id], axis=-1)
 
