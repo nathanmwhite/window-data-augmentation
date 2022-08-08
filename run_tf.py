@@ -164,12 +164,17 @@ def evaluate_test(model, test_data, total_vocab, output_len):
             #print(inp)
 #             print(input_)
 #             print(decoder_tensor)
-            predictions = model((input_, decoder_tensor),
+            decoder_padded = tf.keras.preprocessing.sequence.pad_sequences(
+                                 decoder_tensor, padding="post"
+                                 )
+
+
+            predictions = model((input_, decoder_padded),
                                 training=False)
             # end TODO
             
             print(type(predictions))
-            predictions = predictions[:, -1:, :]
+            predictions = predictions[:, i:i+1, :]
 
             predicted_id = tf.argmax(predictions, axis=-1)
             print(predicted_id)
