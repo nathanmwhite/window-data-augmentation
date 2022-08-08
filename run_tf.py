@@ -141,6 +141,8 @@ def evaluate_test(model, test_data, total_vocab, output_len):
         return tf.reduce_sum(accuracies)/tf.reduce_sum(mask)
     # end Tensorflow tutorial code
     
+    inv_total_vocab = {v: k for k, v in total_vocab.items()}
+    
     accuracies = []
     bleu_real = []
     bleu_pred = []
