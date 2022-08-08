@@ -112,10 +112,10 @@ def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len, *
             
             
             # Based on logic from Tensorflow tutorial website
-            target_lookahead_mask = create_look_ahead_mask(target.size(dim=1))
+            target_lookahead_mask = create_look_ahead_mask(target.size(dim=1)).to(device)
             
-            source_padding_mask = create_padding_mask(source)
-            target_padding_mask = create_padding_mask(target)
+            source_padding_mask = create_padding_mask(source).to(device)
+            target_padding_mask = create_padding_mask(target).to(device)
                    
             # output is (batch_size, target_seq_len, num_features)
             processed = super().forward(source_embedded, 
