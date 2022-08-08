@@ -380,6 +380,16 @@ if __name__ == '__main__':
                       args.patience)
     message = f"Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
     logging.info(message)
+    window_set = (args.LA,
+                  args.RA,
+                  args.S3,
+                  args.S5,
+                  args.S7,
+                  args.S9,
+                  args.S11,
+                  args.S13)
+    message = f"Model windows: " + ' | '.join(str(w) for w in window_set)
+    logging.info(message)
     # write results to log file
     logging.info(f'Base accuracy: {results[0]}')
     logging.info(f'BLEU-4: {results[1][3]}')
