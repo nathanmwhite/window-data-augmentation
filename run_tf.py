@@ -372,8 +372,9 @@ if __name__ == '__main__':
     hyperparam_set = ('rnn_test',
                       args.rnn_type,
                       args.batch_size,
-                      args.lr,
-                      args.epochs)
+                      args.hidden_size,
+                      args.epochs,
+                      args.patience)
     message = f"Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
     logging.info(message)
     # write results to log file
