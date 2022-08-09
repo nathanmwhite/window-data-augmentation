@@ -122,7 +122,7 @@ def evaluate(model, loss_function, eval_dataloader, total_vocab, output_len):
         
         # needs total_vocab index
         decoder_input = [total_vocab['<start>']]
-        output_in = decoder_input.unsqueeze(0).to(torch.int64)
+        output_in = torch.LongTensor(decoder_input).unsqueeze(0)
         
         scorable_output = None
         # needs access to OUTPUT_LEN
