@@ -72,7 +72,7 @@ class TorchDataset(Dataset):
         return encoder_input, decoder_input, decoder_output
 
 
-def get_windowed_data(datapath):
+def get_windowed_data(datapath, test_group=0):
     # sliding data could be of many different sizes
     data = []
     left_window_data = []
@@ -86,7 +86,12 @@ def get_windowed_data(datapath):
     test_data = []
 
     # TODO: rewrite to allow cross-validation
-    test_text_indices = [5, 10, 17, 18]
+    test_text_groups = [[5, 10, 17, 18],
+                         [16],
+                         [2, 11, 12],
+                         [1, 3, 6, 14],
+                         [4, 7, 8, 9, 13, 15, 19, 20]]
+    test_text_indices = test_text_groups[test_group]
     training_text_indices = [i for i in range(1, 21) if i not in test_text_indices]
 
     for i in training_text_indices:
@@ -269,12 +274,13 @@ def create_final_dataset(in_padded,
     return dataset
 
 
-def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt', batch_size=None):
+def load_dataset(data_path, vocab_path, window_types=['base'], test_group=0, tensors='pt', batch_size=None):
     """
     load_dataset : Loads the dataset according to the specified tensor type.
     @param data_path (str) : the path to the dataset to load
     @param vocab_path (str) : the path to the saved vocabulary
     @param window_types (List[str]) : a list containing the data windows to return
+    @param test_group (int) : indicates which grouping of data to use as the test set (0-4)
     @param tensors (str) : whether to return tensors as PyTorch (pt) or TensorFlow (tf)
     @param batch_size (int) : indicates the batch size to use in the dataset (TensorFlow only)
     returns: 1. the training dataset of the specified tensor type
@@ -283,7 +289,7 @@ def load_dataset(data_path, vocab_path, window_types=['base'], tensors='pt', bat
              4. the maximum length of encoder inputs
              5. the maximum length of decoder inputs
     """
-    data = get_windowed_data(data_path)
+    data = get_windowed_data(data_path, test_group=test_group)
 
     padded_sequences, vocab, in_len, out_len = generate_windowed_input_output(data, vocab_path)
         
