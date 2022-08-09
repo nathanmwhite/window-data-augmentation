@@ -142,8 +142,8 @@ def evaluate(model, loss_function, eval_dataloader, total_vocab, output_len):
         
         scorable_output = output_in.squeeze(dim=0)
         
-        print("Actual: {}".format(' '.join(inv_total_vocab[i] for i in targets.numpy())))
-        print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
+#         print("Actual: {}".format(' '.join(inv_total_vocab[i] for i in targets.numpy())))
+#         print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
    
         # TODO: determine more elegant way to do this
         target_scorable = np.array([i for i in targets.numpy() if i not in [pad_idx, start_idx, end_idx]])
