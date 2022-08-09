@@ -117,7 +117,7 @@ def evaluate(model, loss_function, eval_dataloader, total_vocab, output_len):
     end_idx = total_vocab['<end>']
 
     for i, data_point in enumerate(eval_dataloader):
-        inputs, targets = data_point
+        inputs, _, targets = data_point
         encoder_in = inputs.unsqueeze(0)
         
         # needs total_vocab index
