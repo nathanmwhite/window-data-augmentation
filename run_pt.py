@@ -221,6 +221,7 @@ if __name__ == '__main__':
     parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--clip_norm', type=float, default=5.0)
     parser.add_argument('--early_stopping', type=bool, default=False)
+    parser.add_argument('--test_group', type=int, default=0)
     parser.add_argument('--LA', type=bool, default=False)
     parser.add_argument('--RA', type=bool, default=False)
     parser.add_argument('--S3', type=bool, default=False)
@@ -257,7 +258,11 @@ if __name__ == '__main__':
      test_dataset,
      total_vocab,
      encoder_seq_len,
-     decoder_seq_len) = load_dataset(args.data_path, args.vocab_path, window_types=data_types, tensors='pt')
+     decoder_seq_len) = load_dataset(args.data_path,
+                                     args.vocab_path,
+                                     window_types=data_types,
+                                     test_group=args.test_group,
+                                     tensors='pt')
     
     # Wrap datasets into DataLoader objects
     train_dataloader = DataLoader(train_dataset, 
