@@ -121,9 +121,13 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
         inputs, _, targets = data_point
         encoder_in = inputs.unsqueeze(0)
         
-        # needs total_vocab index
-        decoder_input = [total_vocab['<start>']]
-        output_in = torch.LongTensor(decoder_input).unsqueeze(0).to(device)
+        decoder_input = [start_idx]
+        decoder_input = torch.LongTensor(decoder_input)
+        
+        # pad decoder input as output_in
+        pad_tensor = torch.zeros((output_len-decoder_input.size(dim=0),), dtype=torch.int64)
+        output_in = torch.cat([decoder_input, pad_tensor], dim=-1)
+        output_in = output_in.unsqueeze(0).to(device)
         
         scorable_output = None
         # needs access to OUTPUT_LEN
@@ -132,16 +136,16 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             predictions = model(encoder_in, output_in)
             
             # TODO: check accuracy of dimensions
-            predictions = predictions[:, -1:, :]
+            predictions = predictions[:, i:i+1, :]
             
             predicted_id = torch.argmax(predictions, dim=-1)
             
-            output_in = torch.cat([output_in, predicted_id], dim=-1)
+            decoder_input = torch.cat([decoder_input, predicted_id], dim=-1)
             
-            if predicted_id == total_vocab['<end>']:
+            if predicted_id == end_idx:
                 break
         
-        scorable_output = output_in.squeeze(dim=0)
+        scorable_output = decoder_input.squeeze(dim=0)
         
 #         print("Actual: {}".format(' '.join(inv_total_vocab[i] for i in targets.numpy())))
 #         print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
