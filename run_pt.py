@@ -232,6 +232,7 @@ if __name__ == '__main__':
     parser.add_argument('--clip_norm', type=float, default=5.0)
     parser.add_argument('--early_stopping', type=bool, default=False)
     parser.add_argument('--test_group', type=int, default=0)
+    parser.add_argument('--transformer_layers', type=int, default=1)
     parser.add_argument('--LA', type=bool, default=False)
     parser.add_argument('--RA', type=bool, default=False)
     parser.add_argument('--S3', type=bool, default=False)
@@ -285,7 +286,12 @@ if __name__ == '__main__':
     vocab_size = len(total_vocab)
     
     # instantiate model
-    model = construct_transformer_model(vocab_size, args.d_model, encoder_seq_len, decoder_seq_len)
+    model = construct_transformer_model(vocab_size, 
+                                        args.d_model, 
+                                        encoder_seq_len, 
+                                        decoder_seq_len, 
+                                        num_encoder_layers=args.transformer_layers,
+                                        num_decoder_layers=args.transformer_layers)
     
     model.to(device)
     
