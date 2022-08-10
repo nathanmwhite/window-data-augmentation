@@ -148,14 +148,14 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             if predicted_id[0] == end_idx:
                 break
         
-        scorable_output = decoder_input.squeeze(dim=0)
+        scorable_output = decoder_input
         
 #         print("Actual: {}".format(' '.join(inv_total_vocab[i] for i in targets.numpy())))
 #         print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
    
         # TODO: determine more elegant way to do this
-        target_scorable = np.array([i for i in targets.numpy() if i not in [pad_idx, start_idx, end_idx]])
-        pred_scorable = np.array([i for i in scorable_output.numpy() if i not in [pad_idx, start_idx, end_idx]])
+        target_scorable = np.array([i for i in targets.cpu().numpy() if i not in [pad_idx, start_idx, end_idx]])
+        pred_scorable = np.array([i for i in scorable_output.cpu().numpy() if i not in [pad_idx, start_idx, end_idx]])
 
         bleu_real.append([target_scorable.tolist()])
         bleu_pred.append(pred_scorable.tolist())
