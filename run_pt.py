@@ -140,11 +140,12 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             # TODO: check accuracy of dimensions
             predictions = predictions[:, i:i+1, :]
             
-            predicted_id = torch.argmax(predictions, dim=-1)
+            predicted_id = torch.argmax(predictions, dim=-1).squeeze(0)
             
             decoder_input = torch.cat([decoder_input, predicted_id], dim=-1)
             
-            if predicted_id == end_idx:
+            logging.info(predicted_id)
+            if predicted_id[0] == end_idx:
                 break
         
         scorable_output = decoder_input.squeeze(dim=0)
