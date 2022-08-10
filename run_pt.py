@@ -122,12 +122,12 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
         encoder_in = inputs
         
         decoder_input = [start_idx]
-        decoder_input = torch.LongTensor(decoder_input)
+        decoder_input = torch.LongTensor(decoder_input).to(device)
         
         # pad decoder input as output_in
-        pad_tensor = torch.zeros((output_len-decoder_input.size(dim=0),), dtype=torch.int64)
+        pad_tensor = torch.zeros((output_len-decoder_input.size(dim=0),), dtype=torch.int64).to(device)
         output_in = torch.cat([decoder_input, pad_tensor], dim=-1)
-        output_in = output_in.unsqueeze(0).to(device)
+        output_in = output_in.unsqueeze(0)
         
         scorable_output = None
         # needs access to OUTPUT_LEN
