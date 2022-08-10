@@ -85,7 +85,8 @@ def train_epoch(idx, training_data_loader, num_classes, model, loss_function, op
 
 
 # Ported from Google Colaboratory-based code and converted to PyTorch
-def evaluate(model, loss_function, eval_dataloader, total_vocab, output_len):
+# with modifications
+def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_len):
     def test_bleu_function(real, pred):
         # real and pred here must be numpy
         bleu_1 = corpus_bleu(real, pred, weights=(1.0,))
@@ -122,7 +123,7 @@ def evaluate(model, loss_function, eval_dataloader, total_vocab, output_len):
         
         # needs total_vocab index
         decoder_input = [total_vocab['<start>']]
-        output_in = torch.LongTensor(decoder_input).unsqueeze(0)
+        output_in = torch.LongTensor(decoder_input).unsqueeze(0).to(device)
         
         scorable_output = None
         # needs access to OUTPUT_LEN
@@ -313,7 +314,7 @@ if __name__ == '__main__':
 
     model.eval()
     with torch.no_grad():
-        results = evaluate(model, loss_function, test_dataloader, total_vocab, decoder_seq_len)
+        results = evaluate(model, device, loss_function, test_dataloader, total_vocab, decoder_seq_len)
         
     hyperparam_set = ('transformer_test',
                       args.d_model,
