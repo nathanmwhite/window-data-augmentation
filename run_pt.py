@@ -119,7 +119,7 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
 
     for i, data_point in enumerate(eval_dataloader):
         inputs, _, targets = data_point
-        encoder_in = inputs.unsqueeze(0)
+        encoder_in = inputs
         
         decoder_input = [start_idx]
         decoder_input = torch.LongTensor(decoder_input)
