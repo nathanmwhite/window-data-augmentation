@@ -154,7 +154,7 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
 #         print("Predicted: {}".format(' '.join(inv_total_vocab[i] for i in scorable_output.numpy())))
    
         # TODO: determine more elegant way to do this
-        target_scorable = np.array([i for i in targets.cpu().numpy() if i not in [pad_idx, start_idx, end_idx]])
+        target_scorable = np.array([i for i in targets.squeeze(0).cpu().numpy() if i not in [pad_idx, start_idx, end_idx]])
         pred_scorable = np.array([i for i in scorable_output.cpu().numpy() if i not in [pad_idx, start_idx, end_idx]])
 
         bleu_real.append([target_scorable.tolist()])
