@@ -22,6 +22,8 @@ import torch
 from torch.utils.data import DataLoader
 from torch.nn.utils import clip_grad_norm_
 
+from nltk.translate.bleu_score import corpus_bleu
+
 #from torchmetrics import Accuracy
 
 from .model_pt import construct_transformer_model
