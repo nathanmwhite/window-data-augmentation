@@ -9,6 +9,10 @@ __copyright__ = "Copyright © 2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
+import logging
+
+logging.basicConfig(level=logging.INFO, filename='run_pt.log')
+
 import numpy as np
 
 import torch
@@ -118,6 +122,8 @@ def construct_transformer_model(vocab_size, d_model, encoder_len, decoder_len, *
             target_padding_mask = create_padding_mask(target).to(device)
                    
             # output is (batch_size, target_seq_len, num_features)
+            logging.info(source_embedded.size())
+            logging.info(target_embedded.size())
             processed = super().forward(source_embedded, 
                                         target_embedded, 
                                         tgt_mask=target_lookahead_mask,
