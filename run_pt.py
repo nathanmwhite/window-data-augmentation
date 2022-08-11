@@ -125,16 +125,19 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
         
         decoder_input = [start_idx]
         decoder_input = torch.LongTensor(decoder_input).to(device)
-        
-        # pad decoder input as output_in
-        pad_tensor = torch.zeros((output_len-decoder_input.size(dim=0),), dtype=torch.int64).to(device)
-        output_in = torch.cat([decoder_input, pad_tensor], dim=-1)
-        output_in = output_in.unsqueeze(0)
-        
+            
         scorable_output = None
         # needs access to OUTPUT_LEN
         # TODO: continue here
         for i in range(output_len):
+            # pad decoder input as output_in
+            pad_tensor = torch.zeros((output_len-decoder_input.size(dim=0),), dtype=torch.int64).to(device)
+            output_in = torch.cat([decoder_input, pad_tensor], dim=-1)
+            output_in = output_in.unsqueeze(0)
+            
+            logging.info(i)
+            logging.info(output_len)
+            logging.info(end_idx)
             logging.info(encoder_in.size())
             logging.info(output_in.size())
             predictions = model(encoder_in, output_in)
@@ -151,6 +154,7 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             
             logging.info(predicted_id)
             if predicted_id[0] == end_idx:
+                logging.info(true)
                 break
         
         scorable_output = decoder_input
