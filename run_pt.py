@@ -143,6 +143,8 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             # TODO: check accuracy of dimensions
             predictions = predictions[:, i:i+1, :]
             
+            logging.info(torch.argmax(predictions[:, 0:i+1, :], dim=-1))
+            
             predicted_id = torch.argmax(predictions, dim=-1).squeeze(0)
             
             decoder_input = torch.cat([decoder_input, predicted_id], dim=-1)
