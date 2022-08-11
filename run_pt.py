@@ -135,18 +135,20 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             output_in = torch.cat([decoder_input, pad_tensor], dim=-1)
             output_in = output_in.unsqueeze(0)
             
-            logging.info(i)
-            logging.info(output_len)
+            logging.info(i) # up to 229: check dataset format for correct length
+            logging.info(output_len) # 230: check dataset format for correct length
             logging.info(end_idx)
-            logging.info(encoder_in.size())
-            logging.info(output_in.size())
+            #logging.info(encoder_in.size()) # [1, 271]
+            #logging.info(output_in.size()) # [1, 230]
             predictions = model(encoder_in, output_in)
             
-            logging.info(predictions.size())
+            logging.info(predictions.size()) # [1, 230, 120]
+            
+            logging.info(torch.argmax(predictions[:, 0:i+1, :], dim=-1))
             # TODO: check accuracy of dimensions
             predictions = predictions[:, i:i+1, :]
             
-            logging.info(torch.argmax(predictions[:, 0:i+1, :], dim=-1))
+
             
             predicted_id = torch.argmax(predictions, dim=-1).squeeze(0)
             
