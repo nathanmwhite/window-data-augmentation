@@ -139,6 +139,7 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             logging.info(output_in.size())
             predictions = model(encoder_in, output_in)
             
+            logging.info(predictions.size())
             # TODO: check accuracy of dimensions
             predictions = predictions[:, i:i+1, :]
             
