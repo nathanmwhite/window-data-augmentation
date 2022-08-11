@@ -81,6 +81,92 @@ def retrieve_sents(data_stream,
   return sents
 
 
+def retrieve_sents_veo(data_stream, 
+                       left_slide=False, 
+                       right_slide=False, 
+                       lim_slide=False, 
+                       split_comma=False, 
+                       lim=0):
+  # with ywl, sequences are rows of words
+  # with veo, sequences are rows of untokenized phrases
+  # veo: need to tokenize on spaces, terminate as clauses even if no punctuation
+  # transform veo into ywl format
+  # 1. tokenize on spaces
+#   tokenized_data_stream = []
+#   for in_, out_ in data_stream:
+#       # determine all punctuation and sub here to tokenize off as spaces
+#       in_content = re.sub('', '', in_)
+#       in_content = re.sub(' +', ' ', content)
+#       content = content.split(' ')
+      # problem: spaces are not the same as input/output
+      # check ywl data for the symbols, and replicate here
+      
+  # 2. add periods if punctuation not in last two characters (supports quotation marks),
+  #     honor em-dashes as splitting punctuation
+  #    punctuation may not appear in input, but appears in output--what to do? --empty token
+#   for line in data_stream:
+#     pass
+  # 3. flatten
+  sents = []
+  current_sent = []
+  slides = {}
+  for i in range(lim):
+    slides[i] = []
+  for j, item in enumerate(data_stream):
+    current_sent.append(item)
+    if lim_slide == True:
+      if j < lim:
+        # j + 1 because otherwise initial sequences would have len > lim
+        for i in range(j + 1):
+          slides[i].append(item)
+      # previous comment: this doesn't handle the last several instances correctly
+      # confirmed already fixed as of 4 August 2022
+      else:
+        # check modulo, and add to sents, and clear dict entry
+        current_slide = j % lim
+        sents.append(slides[current_slide])
+        slides[current_slide] = []
+        # then add current word to all dict entries
+        for i in range(lim):
+          slides[i].append(item)
+    else:
+      if split_comma:
+        split = ['.', ',']
+      else:
+        split = ['.']
+      if item[0] in split:
+        if len(current_sent) >= 3:
+          # handle aligned versions
+          if left_slide == True:
+            sent_windows = []
+            for i in range(len(current_sent) - 1, 1, -1):
+              sent_windows.append(current_sent[:i])
+            sents += sent_windows
+          if right_slide == True:
+            sent_windows = []
+            for i in range(1, len(current_sent) - 1):
+              sent_windows.append(current_sent[i:])
+            sents += sent_windows
+ 
+        # handle the basic current_sent in any case
+        if len(current_sent) >= 2:
+          sents.append(current_sent)
+          current_sent = []
+        else:  # clear single sentence of comma or period
+          current_sent = []
+  
+  # append whatever is left over at the end of a text (if no final comma or
+  #  period); if lim_slide, only include the last complete unit
+  if lim_slide == True:
+    for i in range(lim):
+      if len(slides[i]) == lim:
+        sents.append(slides[i])
+  else:
+    if current_sent != []:
+      sents.append(current_sent)
+  return sents
+
+
 def join_sents(sent_list):
   # sents are sequences of this: '.\t.\t[punc]\t100%\n'
   input_sents = []
