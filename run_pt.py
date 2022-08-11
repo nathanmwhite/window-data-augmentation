@@ -156,7 +156,6 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             
             logging.info(predicted_id)
             if predicted_id[0] == end_idx:
-                logging.info(true)
                 break
         
         scorable_output = decoder_input
