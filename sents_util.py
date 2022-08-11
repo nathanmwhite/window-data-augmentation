@@ -91,8 +91,10 @@ def retrieve_sents_veo(data_stream,
   # with veo, sequences are rows of untokenized phrases
   # veo: need to tokenize on spaces, terminate as clauses even if no punctuation
   # transform veo into ywl format
+  # TODO: review whether data_stream has input, output, or both, and revise as necessary
   # 1. tokenize on spaces
-#   tokenized_data_stream = []
+#   tokenized_in_data_stream = []
+#   tokenized_out_data_stream = []
 #   for in_, out_ in data_stream:
 #       # determine all punctuation and sub here to tokenize off as spaces
 #         in_content = in_
@@ -102,16 +104,24 @@ def retrieve_sents_veo(data_stream,
 #           in_content = re.sub(f'{c}', f' {c} ', in_content)
 #           out_content = re.sub(f'{c}', f' {c} ', out_content)
 #       in_content = re.sub(' +', ' ', in_content)
+#         out_content = re.sub(' +', ' ', out_content)
 #       in_content = in_content.split(' ')
+#         out_content = out_content.split(' ')
+        # 2. add periods if punctuation not in last two characters (supports quotation marks),
+        #     honor em-dashes as splitting punctuation
+        #     punctuation may not appear in input, but appears in output--what to do? --empty token
+#         sent_ends = [',', '.', '!', '?', '—']
+#         if in_content[-1] not in sent_ends:
+#           in_content.append('')
+#         if out_content[-2] not in sent_ends and out_content[-1] not in sent_ends:
+#           out_content.append('.')
+#         tokenized_in_data_stream.append(in_content)
+#         tokenized_out_data_stream.append(out_content)
       # problem: spaces are not the same as input/output
-      # check ywl data for the symbols, and replicate here
-      
-  # 2. add periods if punctuation not in last two characters (supports quotation marks),
-  #     honor em-dashes as splitting punctuation
-  #    punctuation may not appear in input, but appears in output--what to do? --empty token
-#   for line in data_stream:
-#     pass
-  # 3. flatten
+      # check ywl data for the symbols, and replicate here: & remove space, % add space
+  # 3. flatten: TODO
+    
+    
   sents = []
   current_sent = []
   slides = {}
