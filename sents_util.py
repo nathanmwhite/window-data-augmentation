@@ -95,9 +95,14 @@ def retrieve_sents_veo(data_stream,
 #   tokenized_data_stream = []
 #   for in_, out_ in data_stream:
 #       # determine all punctuation and sub here to tokenize off as spaces
-#       in_content = re.sub('', '', in_)
-#       in_content = re.sub(' +', ' ', content)
-#       content = content.split(' ')
+#         in_content = in_
+#         punctuation = ['\.', ',', '"', '“', '”', '?', '\(', '\)', '\[', '\]', '—', '!']
+# #       in_content = re.sub('', '', in_)
+#         for c in punctuation:
+#           in_content = re.sub(f'{c}', f' {c} ', in_content)
+#           out_content = re.sub(f'{c}', f' {c} ', out_content)
+#       in_content = re.sub(' +', ' ', in_content)
+#       in_content = in_content.split(' ')
       # problem: spaces are not the same as input/output
       # check ywl data for the symbols, and replicate here
       
