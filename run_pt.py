@@ -11,6 +11,8 @@ __author_email__ = "nathan.white1@jcu.edu.au"
 
 import argparse
 
+import datetime
+
 import logging
 
 logging.basicConfig(level=logging.INFO, filename='run_pt.log')
@@ -135,9 +137,9 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             output_in = torch.cat([decoder_input, pad_tensor], dim=-1)
             output_in = output_in.unsqueeze(0)
             
-            logging.info(i) # up to 229: check dataset format for correct length
-            logging.info(output_len) # 230: check dataset format for correct length
-            logging.info(end_idx)
+            #logging.info(i) # up to 229: check dataset format for correct length
+            #logging.info(output_len) # 230: check dataset format for correct length
+            #logging.info(end_idx)
             #logging.info(encoder_in.size()) # [1, 271]
             #logging.info(output_in.size()) # [1, 230]
             predictions = model(encoder_in, output_in)
@@ -145,10 +147,8 @@ def evaluate(model, device, loss_function, eval_dataloader, total_vocab, output_
             logging.info(predictions.size()) # [1, 230, 120]
             
             logging.info(torch.argmax(predictions[:, 0:i+1, :], dim=-1))
-            # TODO: check accuracy of dimensions
-            predictions = predictions[:, i:i+1, :]
-            
 
+            predictions = predictions[:, i:i+1, :]
             
             predicted_id = torch.argmax(predictions, dim=-1).squeeze(0)
             
@@ -315,6 +315,9 @@ if __name__ == '__main__':
     loss_function = masked_loss_function
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.98), eps=1e-9)
     
+    timestamp = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+    logging.info(f'{timestamp} : Begin training')
+    
     # training accuracy here considers all positions, including masked positions
     # this ensures that randomly generated elements inside padding penalize
     #  the accuracy metric
@@ -336,6 +339,9 @@ if __name__ == '__main__':
                 break
 
     model.eval()
+    timestamp = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+    logging.info(f'{timestamp} : Begin evaluation')
+    
     with torch.no_grad():
         results = evaluate(model, device, loss_function, test_dataloader, total_vocab, decoder_seq_len)
         
@@ -344,7 +350,18 @@ if __name__ == '__main__':
                       args.batch_size,
                       args.lr,
                       args.epochs)
-    message = f"Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
+    timestamp = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+    message = f"{timestamp} : Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
+    logging.info(message)
+    window_set = (args.LA,
+                  args.RA,
+                  args.S3,
+                  args.S5,
+                  args.S7,
+                  args.S9,
+                  args.S11,
+                  args.S13)
+    message = f"Model windows: " + ' | '.join(str(w) for w in window_set)
     logging.info(message)
     message = f"Test raw accuracy: {results[0]}"
     logging.info(message)
