@@ -379,7 +379,8 @@ if __name__ == '__main__':
                       args.hidden_size,
                       args.lr,
                       args.epochs,
-                      args.patience)
+                      args.patience,
+                      args.test_group)
     message = f"Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
     logging.info(message)
     window_set = (args.LA,
