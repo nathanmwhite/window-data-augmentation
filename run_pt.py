@@ -236,9 +236,10 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--epochs', type=int, default=500)
     parser.add_argument('--lr', type=float, default=3e-04)
-    parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--clip_norm', type=float, default=5.0)
+    parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--early_stopping', type=bool, default=False)
+    parser.add_argument('--min_delta', type=float, default=0.0)
     parser.add_argument('--test_group', type=int, default=0)
     parser.add_argument('--transformer_layers', type=int, default=1)
     parser.add_argument('--LA', type=bool, default=False)
@@ -305,7 +306,7 @@ if __name__ == '__main__':
     
     model.train()
     
-    early_stopping = Early_Stopping(patience=args.patience)
+    early_stopping = Early_Stopping(min_delta=args.min_delta, patience=args.patience)
     
     # define loss and optimizer
     # from the original Transformer implementations:
@@ -349,6 +350,9 @@ if __name__ == '__main__':
                       args.d_model,
                       args.batch_size,
                       args.lr,
+                      args.patience,
+                      args.min_delta,
+                      args.transformer_layers,
                       args.epochs)
     timestamp = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
     message = f"{timestamp} : Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
