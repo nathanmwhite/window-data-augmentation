@@ -1,4 +1,4 @@
-# Text summarization number probing
+# Window data augmentation
 # Original code Copyright © 2022 Nathan M. White
 # Other code as indicated has copyright held by their respective owners.
 
