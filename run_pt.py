@@ -242,6 +242,7 @@ if __name__ == '__main__':
     parser.add_argument('--min_delta', type=float, default=0.0)
     parser.add_argument('--test_group', type=int, default=0)
     parser.add_argument('--transformer_layers', type=int, default=1)
+    parser.add_argument('--dff', type=int, default=512)
     parser.add_argument('--LA', type=bool, default=False)
     parser.add_argument('--RA', type=bool, default=False)
     parser.add_argument('--S3', type=bool, default=False)
@@ -300,7 +301,8 @@ if __name__ == '__main__':
                                         encoder_seq_len, 
                                         decoder_seq_len, 
                                         num_encoder_layers=args.transformer_layers,
-                                        num_decoder_layers=args.transformer_layers)
+                                        num_decoder_layers=args.transformer_layers,
+                                        dim_feedforward=args.dff)
     
     model.to(device)
     
