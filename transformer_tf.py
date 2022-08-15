@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, filename='run_pt.log')
 
 import numpy as np
 
-import transformer as tf
+import tensorflow as tf
 
 
 # code from Tensorflow tutorial website
