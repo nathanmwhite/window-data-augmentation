@@ -366,7 +366,7 @@ if __name__ == '__main__':
 #     pad_token = total_vocab['<pad>']
     
     # missing: ckpt_manager
-    for epoch in range(EPOCHS):
+    for epoch in range(args.epochs):
         start = time.time()
   
         train_loss.reset_states()
