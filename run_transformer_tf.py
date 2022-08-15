@@ -15,6 +15,8 @@ import logging
 
 logging.basicConfig(level=logging.INFO, filename='rnn_experiment.log')
 
+import time
+
 import numpy as np
 
 import tensorflow as tf
@@ -111,24 +113,26 @@ train_step_signature = [
 train_loss = tf.keras.metrics.Mean(name='train_loss')
 train_accuracy = tf.keras.metrics.Mean(name='train_accuracy')
 
+optimizer = tf.keras.optimizers.Adam(args.lr, beta_1=0.9, beta_2=0.98, 
+                                     epsilon=1e-9)
 
 @tf.function(input_signature=train_step_signature)
-def train_step(inp, tar_inp, tar_real):
+def train_step(model, inp, tar_inp, tar_real):
 #   tar_inp = tar[:, :-1]
 #   tar_real = tar[:, 1:]
   
   enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
   
   with tf.GradientTape() as tape:
-    predictions, _ = transformer(inp, tar_inp, 
+    predictions, _ = model(inp, tar_inp, 
                                  True, 
                                  enc_padding_mask, 
                                  combined_mask, 
                                  dec_padding_mask)
     loss = loss_function(tar_real, predictions)
  
-  gradients = tape.gradient(loss, transformer.trainable_variables)    
-  optimizer.apply_gradients(zip(gradients, transformer.trainable_variables))
+  gradients = tape.gradient(loss, model.trainable_variables)    
+  optimizer.apply_gradients(zip(gradients, model.trainable_variables))
   
   train_loss(loss)
   train_accuracy(accuracy_function(tar_real, predictions))
@@ -373,16 +377,16 @@ if __name__ == '__main__':
         train_accuracy.reset_states()
   
         for (batch, (inp, tar_inp, tar_real)) in enumerate(train_dataset):
-            train_step(inp, tar_inp, tar_real)
+            train_step(model, inp, tar_inp, tar_real)
     
         if batch % 50 == 0:
             print ('Epoch {} Batch {} Loss {:.4f} Accuracy {:.4f}'.format(
                    epoch + 1, batch, train_loss.result(), train_accuracy.result()))
       
         if (epoch + 1) % 5 == 0:
-            ckpt_save_path = ckpt_manager.save()
-            print ('Saving checkpoint for epoch {} at {}'.format(epoch+1,
-                                                                 ckpt_save_path))
+            #ckpt_save_path = ckpt_manager.save()
+            #print ('Saving checkpoint for epoch {} at {}'.format(epoch+1,
+            #                                                     ckpt_save_path))
     
             print ('Epoch {} Loss {:.4f} Accuracy {:.4f}'.format(epoch + 1, 
                                                                  train_loss.result(), 
