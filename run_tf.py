@@ -383,6 +383,7 @@ if __name__ == '__main__':
                       args.test_group)
     message = f"Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
     logging.info(message)
+    print(message)
     window_set = (args.LA,
                   args.RA,
                   args.S3,
@@ -393,7 +394,14 @@ if __name__ == '__main__':
                   args.S13)
     message = f"Model windows: " + ' | '.join(str(w) for w in window_set)
     logging.info(message)
+    print(message)
     # write results to log file
-    logging.info(f'Base accuracy: {results[0]}')
-    logging.info(f'BLEU-4: {results[1][3]}')
-    logging.info(f'WER: {results[2]}')
+    message = f'Base accuracy: {results[0]}'
+    logging.info(message)
+    print(message)
+    message = f'BLEU-4: {results[1][3]}'
+    logging.info(message)
+    print(message)
+    message = f'WER: {results[2]}'
+    logging.info(message)
+    print(message)
