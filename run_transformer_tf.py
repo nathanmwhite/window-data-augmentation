@@ -347,14 +347,17 @@ if __name__ == '__main__':
                                          epsilon=1e-9)
 
     @tf.function(input_signature=train_step_signature)
-    def train_step(model, inp, tar_inp, tar_real):
+    def train_step(inp, tar):
     #   tar_inp = tar[:, :-1]
     #   tar_real = tar[:, 1:]
+        inp_ = inp[0]
+        tar_inp = inp[1]
+        tar_real = tar
 
-        enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
+        enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp_, tar_inp)
 
         with tf.GradientTape() as tape:
-            predictions, _ = model(inp, tar_inp, 
+            predictions, _ = model(inp_, tar_inp, 
                                        True, 
                                        enc_padding_mask, 
                                        combined_mask, 
@@ -376,7 +379,7 @@ if __name__ == '__main__':
         train_accuracy.reset_states()
   
         for (batch, ((inp, tar_inp), tar_real)) in enumerate(train_dataset):
-            train_step(model, inp, tar_inp, tar_real)
+            train_step((inp, tar_inp), tar_real)
     
         if batch % 50 == 0:
             print ('Epoch {} Batch {} Loss {:.4f} Accuracy {:.4f}'.format(
