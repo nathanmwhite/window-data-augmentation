@@ -113,31 +113,6 @@ train_step_signature = [
 train_loss = tf.keras.metrics.Mean(name='train_loss')
 train_accuracy = tf.keras.metrics.Mean(name='train_accuracy')
 
-optimizer = tf.keras.optimizers.Adam(args.lr, beta_1=0.9, beta_2=0.98, 
-                                     epsilon=1e-9)
-
-@tf.function(input_signature=train_step_signature)
-def train_step(model, inp, tar_inp, tar_real):
-#   tar_inp = tar[:, :-1]
-#   tar_real = tar[:, 1:]
-  
-  enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
-  
-  with tf.GradientTape() as tape:
-    predictions, _ = model(inp, tar_inp, 
-                                 True, 
-                                 enc_padding_mask, 
-                                 combined_mask, 
-                                 dec_padding_mask)
-    loss = loss_function(tar_real, predictions)
- 
-  gradients = tape.gradient(loss, model.trainable_variables)    
-  optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-  
-  train_loss(loss)
-  train_accuracy(accuracy_function(tar_real, predictions))
-
-  
 # TODO: the evaluate_test code for character-level is different than otherwise
 # determine why and replace as necessary
 # it may be that this includes my attempt to incorporate Levenshtein head approach
@@ -368,6 +343,30 @@ if __name__ == '__main__':
 #     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=args.patience, min_delta=args.min_delta)
 
 #     pad_token = total_vocab['<pad>']
+    optimizer = tf.keras.optimizers.Adam(args.lr, beta_1=0.9, beta_2=0.98, 
+                                         epsilon=1e-9)
+
+    @tf.function(input_signature=train_step_signature)
+    def train_step(model, inp, tar_inp, tar_real):
+    #   tar_inp = tar[:, :-1]
+    #   tar_real = tar[:, 1:]
+
+        enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
+
+        with tf.GradientTape() as tape:
+            predictions, _ = model(inp, tar_inp, 
+                                       True, 
+                                       enc_padding_mask, 
+                                       combined_mask, 
+                                       dec_padding_mask)
+            loss = loss_function(tar_real, predictions)
+
+        gradients = tape.gradient(loss, model.trainable_variables)    
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+
+        train_loss(loss)
+        train_accuracy(accuracy_function(tar_real, predictions))
+
     
     # missing: ckpt_manager
     for epoch in range(args.epochs):
