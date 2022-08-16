@@ -358,7 +358,7 @@ if __name__ == '__main__':
                       args.epochs)
     timestamp = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
     message = f"{timestamp} : Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
-    logging.info(message)
+    print(message)
     window_set = (args.LA,
                   args.RA,
                   args.S3,
@@ -368,10 +368,10 @@ if __name__ == '__main__':
                   args.S11,
                   args.S13)
     message = f"Model windows: " + ' | '.join(str(w) for w in window_set)
-    logging.info(message)
+    print(message)
     message = f"Test raw accuracy: {results[0]}"
-    logging.info(message)
+    print(message)
     message = f"Test BLEU-4: {results[1][3]}"
-    logging.info(message)
+    print(message)
     message = f"Test WER: {results[2]}"
-    logging.info(message)
+    print(message)
