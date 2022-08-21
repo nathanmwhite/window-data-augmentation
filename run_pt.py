@@ -355,7 +355,8 @@ if __name__ == '__main__':
                       args.patience,
                       args.min_delta,
                       args.transformer_layers,
-                      args.epochs)
+                      args.epochs,
+                      args.test_group)
     timestamp = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
     message = f"{timestamp} : Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
     print(message)
