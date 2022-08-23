@@ -354,6 +354,8 @@ if __name__ == '__main__':
         tar_inp = inp[1]
         tar_real = tar
 
+        print(inp_.shape)
+        print(tar_inp.shape)
         enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp_, tar_inp)
 
         with tf.GradientTape() as tape:
