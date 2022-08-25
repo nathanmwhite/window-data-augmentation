@@ -44,7 +44,7 @@ def positional_encoding(position, d_model):
 
 def create_padding_mask(seq):
   seq = tf.cast(tf.math.equal(seq, 0), tf.float32)
-  print(seq.shape)
+  #print(seq.shape)
   
   # add extra dimensions to add the padding
   # to the attention logits.
