@@ -17,6 +17,9 @@ import numpy as np
 
 import tensorflow as tf
 
+loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
+    from_logits=True, reduction='none')
+
 
 # code from Tensorflow tutorial website
 def get_angles(pos, i, d_model):
