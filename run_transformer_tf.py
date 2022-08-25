@@ -156,25 +156,24 @@ def evaluate_test(model, test_data, total_vocab, output_len):
 
         scorable_output = None
         for i in range(output_len):
-            # TODO: replace with appropriate code
-#             enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
-#                 input_, output)
+            enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
+                 input_, decoder_tensor)
             #print(inp)
 #             print(input_)
 #             print(decoder_tensor)
-            decoder_padded = tf.keras.preprocessing.sequence.pad_sequences(
-                                 decoder_tensor, padding="post", maxlen=output_len
-                                 )
+#             decoder_padded = tf.keras.preprocessing.sequence.pad_sequences(
+#                                  decoder_tensor, padding="post", maxlen=output_len
+#                                  )
 
             predictions, _ = model(input_,
-                                   output,
+                                   decoder_tensor,
                                    False,
                                    enc_padding_mask,
                                    combined_mask,
                                    dec_padding_mask)
             
             #print(type(predictions))
-            predictions = predictions[:, i:i+1, :]
+            predictions = predictions[:, -1:, :]
 
             predicted_id = tf.argmax(predictions, axis=-1)
             #print(predicted_id)
@@ -182,7 +181,7 @@ def evaluate_test(model, test_data, total_vocab, output_len):
             decoder_tensor = tf.concat([decoder_tensor, predicted_id], axis=-1)
 
             if predicted_id == total_vocab['<end>']:
-              break
+                break
 
         #print(output)
         scorable_output = tf.squeeze(decoder_tensor, axis=0)
