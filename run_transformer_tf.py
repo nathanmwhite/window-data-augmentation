@@ -147,7 +147,7 @@ def evaluate_test(model, test_data, total_vocab, output_len):
     wer_scores = []
     for ((inp, _), tar) in test_data:
         input_ = tf.expand_dims(inp, 0) 
-        #print(input_)
+        #(input_)
 
         decoder_input = [total_vocab['<start>']]
         decoder_tensor = tf.cast(tf.expand_dims(decoder_input, 0), tf.int64)
@@ -355,8 +355,8 @@ if __name__ == '__main__':
         tar_inp = inp[1]
         tar_real = tar
 
-        print(inp_.shape)
-        print(tar_inp.shape)
+        #print(inp_.shape)
+        #print(tar_inp.shape)
         enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp_, tar_inp)
 
         with tf.GradientTape() as tape:
