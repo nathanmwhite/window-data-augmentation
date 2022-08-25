@@ -106,7 +106,8 @@ def create_masks(inp, tar):
 
 
 train_step_signature = [
-    tf.TensorSpec(shape=(None, None), dtype=tf.int64),
+    [tf.TensorSpec(shape=(None, None), dtype=tf.int64),
+     tf.TensorSpec(shape=(None, None), dtype=tf.int64)],
     tf.TensorSpec(shape=(None, None), dtype=tf.int64),
 ]
 
