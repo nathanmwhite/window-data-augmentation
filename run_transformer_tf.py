@@ -351,8 +351,8 @@ if __name__ == '__main__':
     def train_step(inp, tar):
     #   tar_inp = tar[:, :-1]
     #   tar_real = tar[:, 1:]
-        inp_ = inp[:, 0]
-        tar_inp = inp[:, 1]
+        inp_ = inp[0]
+        tar_inp = inp[1]
         tar_real = tar
 
         print(inp_.shape)
