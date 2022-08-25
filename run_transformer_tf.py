@@ -166,12 +166,12 @@ def evaluate_test(model, test_data, total_vocab, output_len):
                                  decoder_tensor, padding="post", maxlen=output_len
                                  )
 
-            predictions, _ = transformer(input_,
-                                         output,
-                                         False,
-                                         enc_padding_mask,
-                                         combined_mask,
-                                         dec_padding_mask)
+            predictions, _ = model(input_,
+                                   output,
+                                   False,
+                                   enc_padding_mask,
+                                   combined_mask,
+                                   dec_padding_mask)
             
             #print(type(predictions))
             predictions = predictions[:, i:i+1, :]
