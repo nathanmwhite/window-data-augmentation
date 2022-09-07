@@ -424,11 +424,11 @@ if __name__ == '__main__':
     results = evaluate_test(model, test_dataset, total_vocab, decoder_seq_len)
         
     hyperparam_set = ('transformer_tf_test',
-                      args.rnn_type,
                       args.batch_size,
                       args.hidden_size,
                       args.lr,
                       args.epochs,
+                      args.num_layers,
                       args.patience,
                       args.test_group)
     message = f"Model hyperparameters: " + ' | '.join(str(w) for w in hyperparam_set)
