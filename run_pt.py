@@ -9,6 +9,11 @@ __copyright__ = "Copyright © 2022 Nathan M. White"
 __author__ = "Nathan M. White"
 __author_email__ = "nathan.white1@jcu.edu.au"
 
+# Note: decision has been made to run these experiments in Tensorflow
+#  code instead of PyTorch
+# The last run of this code in experimentation was on August 26, 2022
+# TODO: document why
+
 import argparse
 
 import datetime
